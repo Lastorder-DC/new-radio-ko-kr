@@ -5,10 +5,10 @@
     "future": "그다음"
   },
   "time": {
-    "in": "{time}안에",
-    "remaining": "{time}남음",
+    "in": "{time} 뒤",
+    "remaining": "{time} 남음",
     "until": "{time}까지",
-    "left": "{time}남았다",
+    "left": "{time} 남음",
     "d": "{n}일 | {n}일",
     "h": "{n}시간 | {n}시간",
     "m": "{n}분 | {n}분",
