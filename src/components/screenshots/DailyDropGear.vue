@@ -11,7 +11,7 @@
             squid-size="20px"
           >
             <div class="px-3 py-1">
-              The Daily Drop
+              오늘의 픽업
             </div>
           </SquidTape>
 

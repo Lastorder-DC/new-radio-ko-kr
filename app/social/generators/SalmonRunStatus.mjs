@@ -25,7 +25,7 @@ export default class SalmonRunStatus extends StatusGenerator
 
     let lines = [];
 
-    let mode = schedule.isBigRun ? 'BIG RUN' : 'Salmon Run';
+    let mode = schedule.isBigRun ? '빅 런' : '연어런';
 
     if (schedule.isGrizzcoMystery) {
       lines.push(`${mode} is now open on ${schedule.settings.coopStage.name} with GRIZZCO MYSTERY WEAPONS! #salmonrun #splatoon3`);

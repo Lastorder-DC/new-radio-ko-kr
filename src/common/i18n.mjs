@@ -47,7 +47,7 @@ export const regionalLocales = {
   ],
 };
 
-export const defaultLocale = locales.find(l => l.code === 'en-US');
+export const defaultLocale = locales.find(l => l.code === 'ko-KR');
 
 const datetimeFormats = {
   dateTimeShort: { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' },
@@ -151,18 +151,5 @@ export function setPreferredLocale(value) {
 }
 
 function detectLocale() {
-  let languages = window.navigator.languages || [window.navigator.language];
-
-  // Try to find a matching language
-  for (let language of languages) {
-    let locale = locales.find(l => l.code.startsWith(language))
-       || locales.find(l => l.code.startsWith(language.substring(0, 2)));
-
-    if (locale) {
-      return locale;
-    }
-  }
-
-  // Fall back to en-US
   return defaultLocale;
 }

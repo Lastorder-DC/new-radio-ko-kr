@@ -14,7 +14,7 @@ export default class SplatNet3Client
   bulletToken = null;
   queryHashes = null;
 
-  constructor(nsoClient, acceptLanguage = 'en-US') {
+  constructor(nsoClient, acceptLanguage = 'ko-KR') {
     this.console = prefixedConsole('SplatNet', nsoClient.region);
     this.nsoClient = nsoClient;
     this.acceptLanguage = acceptLanguage;
