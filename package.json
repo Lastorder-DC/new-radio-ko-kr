@@ -33,7 +33,7 @@
     "@sentry/node": "^7.61.0",
     "console-stamp": "^3.0.6",
     "cron": "^2.1.0",
-    "dotenv": "^16.0.2",
+    "dotenv": "^16.6.1",
     "ecstatic": "^4.1.4",
     "ical-generator": "^3.6.0",
     "jsonpath": "^1.1.1",
