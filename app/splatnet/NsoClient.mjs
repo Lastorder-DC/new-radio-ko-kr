@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-unresolved
 import CoralApi from 'nxapi/coral';
-import { addUserAgent } from 'nxapi';
+import { addUserAgent, setClientAuthentication, ClientAssertionProviderInterface } from 'nxapi';
 import pLimit from 'p-limit';
 import ValueCache from '../common/ValueCache.mjs';
 import prefixedConsole from '../common/prefixedConsole.mjs';
@@ -13,6 +13,7 @@ let _nxapiInitialized = false;
 function initializeNxapi() {
   if (!_nxapiInitialized) {
     addUserAgent(process.env.USER_AGENT);
+    setClientAuthentication({ id: process.env.NXAPI_AUTH_CLIENT_PUBLIC, scope: 'ca:gf ca:er ca:dr' });
   }
 
   _nxapiInitialized = true;
