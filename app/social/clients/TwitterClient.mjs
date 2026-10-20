@@ -7,18 +7,16 @@ export default class TwitterClient extends Client
   name = 'Twitter';
 
   /** @member {TwitterApi} */
-  #api;
+  _api;
 
   async canSend() {
-    return process.env.TWITTER_CONSUMER_KEY
-      && process.env.TWITTER_CONSUMER_SECRET
-      && process.env.TWITTER_ACCESS_TOKEN_KEY
-      && process.env.TWITTER_ACCESS_TOKEN_SECRET;
+    return ['CONSUMER_KEY', 'CONSUMER_SECRET', 'ACCESS_TOKEN_KEY', 'ACCESS_TOKEN_SECRET']
+      .every(key => !!process.env[`TWITTER_${key}`]);
   }
 
   api() {
-    if (!this.#api) {
-      this.#api = new TwitterApi({
+    if (!this._api) {
+      this._api = new TwitterApi({
         appKey: process.env.TWITTER_CONSUMER_KEY,
         appSecret: process.env.TWITTER_CONSUMER_SECRET,
         accessToken: process.env.TWITTER_ACCESS_TOKEN_KEY,
@@ -26,24 +24,39 @@ export default class TwitterClient extends Client
       });
     }
 
-    return this.#api;
+    return this._api;
+  }
+
+  async updateProfile(avatarBuffer, displayName) {
+    await this.api().v1.updateAccountProfileImage(avatarBuffer);
+    await this.api().v1.updateAccountProfile({ name: displayName });
   }
 
   async send(status, generator) {
-    // Upload images
-    let mediaIds = await Promise.all(
-      status.media.map(async m => {
-        let id = await this.api().v1.uploadMedia(Buffer.from(m.file), { mimeType: m.type });
+    if (!status.media?.length) {
+      console.error(`[${this.name}] No media provided for ${generator.key}`);
+      return;
+    }
 
-        if (m.altText) {
-          await this.api().v1.createMediaMetadata(id, { alt_text: { text: m.altText } });
-        }
+    try {
+      // Upload images
+      let mediaIds = await Promise.all(
+        status.media.map(async m => {
+          let id = await this.api().v1.uploadMedia(Buffer.from(m.file), { mimeType: m.type });
 
-        return id;
-      }),
-    );
+          if (m.altText) {
+            await this.api().v1.createMediaMetadata(id, { alt_text: { text: m.altText } });
+          }
 
-    // Send status
-    await this.api().v2.tweet(status.status, { media: { media_ids: mediaIds } });
+          return id;
+        }),
+      );
+
+      // Send status
+      await this.api().v2.tweet(status.status, { media: { media_ids: mediaIds } });
+    } catch (error) {
+      console.error(`[${this.name}] Failed to post ${generator.key}:`, error.message);
+      throw error;
+    }
   }
 }

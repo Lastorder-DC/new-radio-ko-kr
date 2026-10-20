@@ -1,6 +1,22 @@
 import S3Syncer from './S3Syncer.mjs';
+import R2Syncer from './R2Syncer.mjs';
+import CloudflareCachePurger from './CloudflareCachePurger.mjs';
 
-export function canSync() {
+function cachePurger() {
+  const zoneId = process.env.CLOUDFLARE_CACHE_PURGE_ZONE_ID;
+  const apiToken = process.env.CLOUDFLARE_CACHE_PURGE_API_TOKEN;
+
+  if (!zoneId && !apiToken) return;
+
+  return new CloudflareCachePurger({
+    zoneId,
+    apiToken,
+    hosts: (process.env.CLOUDFLARE_CACHE_PURGE_HOSTS ?? '')
+      .split(',').map(host => host.trim()).filter(Boolean),
+  });
+}
+
+export function canSyncS3() {
   return !!(
     process.env.AWS_ACCESS_KEY_ID &&
     process.env.AWS_SECRET_ACCESS_KEY &&
@@ -9,22 +25,58 @@ export function canSync() {
   );
 }
 
-async function doSync(download, upload) {
-  if (!canSync()) {
-    console.warn('Missing S3 connection parameters');
-    return;
+function r2Configuration() {
+  return {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    bucket: process.env.R2_BUCKET,
+    endpoint: process.env.R2_ENDPOINT,
+  };
+}
+
+export function canUploadR2() {
+  return Object.values(r2Configuration()).every(Boolean);
+}
+
+export function canUpload() {
+  return canSyncS3() || canUploadR2();
+}
+
+export async function upload() {
+  // Validate purge settings before starting uploads to either destination.
+  const purger = canUploadR2() ? cachePurger() : undefined;
+  let uploads = [];
+
+  if (canSyncS3()) {
+    uploads.push((new S3Syncer).upload());
+  }
+  if (canUploadR2()) {
+    uploads.push((new R2Syncer({
+      config: r2Configuration(),
+      cachePurger: purger,
+    })).upload());
   }
 
-  const syncer = new S3Syncer();
+  if (uploads.length === 0) {
+    console.warn('Missing object storage connection parameters');
+  }
 
+  await Promise.all(uploads);
+}
+
+async function doSync(download, shouldUpload) {
   if (download) {
-    console.info('Downloading files...');
-    await syncer.download();
+    if (canSyncS3()) {
+      console.info('Downloading files...');
+      await (new S3Syncer).download();
+    } else {
+      console.warn('Missing S3 connection parameters for download');
+    }
   }
 
-  if (upload) {
+  if (shouldUpload) {
     console.info('Uploading files...');
-    await syncer.upload();
+    await upload();
   }
 }
 

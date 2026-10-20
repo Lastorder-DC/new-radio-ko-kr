@@ -1,9 +1,9 @@
-import S3Syncer from '../sync/S3Syncer.mjs';
-import { canSync } from '../sync/index.mjs';
+import { canUpload, upload } from '../sync/index.mjs';
 import FileWriter from './clients/FileWriter.mjs';
 import ImageWriter from './clients/ImageWriter.mjs';
 import MastodonClient from './clients/MastodonClient.mjs';
 // import TwitterClient from './clients/TwitterClient.mjs';
+import BufferTwitterClient from './clients/BufferTwitterClient.mjs';
 import DailyDropGearStatus from './generators/DailyDropGearStatus.mjs';
 import RegularGearStatus from './generators/RegularGearStatus.mjs';
 // import SalmonRunGearStatus from './generators/SalmonRunGearStatus.mjs';
@@ -19,31 +19,49 @@ import BlueskyClient from './clients/BlueskyClient.mjs';
 import ChallengeStatus from './generators/ChallengeStatus.mjs';
 import ThreadsClient from './clients/ThreadsClient.mjs';
 
-function defaultStatusGenerators() {
+export function defaultStatusGenerators(options = {}) {
   return [
-    new SchedulesStatus,
-    new DailyDropGearStatus,
-    new RegularGearStatus,
-    new ChallengeStatus,
-    new SalmonRunStatus,
-    new SalmonRunUpcomingStatus,
-    // new SalmonRunGearStatus,
-    new SplatfestStatus('NA'),
-    new SplatfestStatus('EU'),
-    new SplatfestStatus('JP'),
-    new SplatfestStatus('AP'),
-    new SplatfestResultsStatus('NA'),
-    new SplatfestResultsStatus('EU'),
-    new SplatfestResultsStatus('JP'),
-    new SplatfestResultsStatus('AP'),
-    new EggstraWorkStatus,
-    new EggstraWorkUpcomingStatus,
+    new SchedulesStatus(options),
+    new DailyDropGearStatus(options),
+    new RegularGearStatus(options),
+    new ChallengeStatus(options),
+    new SalmonRunStatus(options),
+    new SalmonRunUpcomingStatus(options),
+    // new SalmonRunGearStatus(options),
+    new SplatfestStatus('NA', options),
+    new SplatfestStatus('EU', options),
+    new SplatfestStatus('JP', options),
+    new SplatfestStatus('AP', options),
+    new SplatfestResultsStatus('NA', options),
+    new SplatfestResultsStatus('EU', options),
+    new SplatfestResultsStatus('JP', options),
+    new SplatfestResultsStatus('AP', options),
+    new EggstraWorkStatus(options),
+    new EggstraWorkUpcomingStatus(options),
   ];
 }
 
-function defaultClients() {
+export function defaultClients(locale = 'en-US') {
+  if (locale === 'ja-JP') {
+    return [
+      new BufferTwitterClient({
+        key: 'twitter.jp',
+        name: 'Twitter (Buffer, JP)',
+        locale,
+        envPrefix: 'BUFFER_TWITTER_JP',
+      }),
+      new BlueskyClient({
+        key: 'bluesky.jp',
+        name: 'Bluesky (JP)',
+        locale,
+        envPrefix: 'BLUESKY_JP',
+      }),
+    ];
+  }
+
   return [
     // new TwitterClient,
+    new BufferTwitterClient,
     new MastodonClient,
     new BlueskyClient,
     new ThreadsClient,
@@ -51,10 +69,10 @@ function defaultClients() {
   ];
 }
 
-export function defaultStatusGeneratorManager() {
+export function defaultStatusGeneratorManager(locale = 'en-US') {
   return new StatusGeneratorManager(
-    defaultStatusGenerators(),
-    defaultClients(),
+    defaultStatusGenerators({ locale }),
+    defaultClients(locale),
   );
 }
 
@@ -66,10 +84,15 @@ export function testStatusGeneratorManager(additionalClients) {
 }
 
 export async function sendStatuses() {
-  await defaultStatusGeneratorManager().sendStatuses();
+  const managers = [
+    defaultStatusGeneratorManager(),
+    defaultStatusGeneratorManager('ja-JP'),
+  ];
 
-  if (canSync()) {
-    await (new S3Syncer).upload();
+  await Promise.all(managers.map(manager => manager.sendStatuses()));
+
+  if (canUpload()) {
+    await upload();
   }
 }
 

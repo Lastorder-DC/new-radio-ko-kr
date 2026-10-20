@@ -6,13 +6,18 @@
       </div>
       <template v-for="festival in festivals" :key="festival.id">
         <div class="flex justify-center mx-2">
-          <div class="font-splatoon2 text-zinc-200 text-center text-shadow text-sm lg:text-lg bg-zinc-700 px-4 py-1 rounded-full bg-opacity-50 backdrop-blur-sm">
+          <div class="font-splatoon2 text-zinc-200 text-center text-shadow text-sm lg:text-lg bg-zinc-700/50 px-4 py-1 rounded-full backdrop-blur-xs">
             {{ $t(`splatnet.festivals.${festival.__splatoon3ink_id}.title`, festival.title) }}
           </div>
         </div>
 
         <div>
-          <img :src="festival.image.url" />
+          <img
+            :src="festival.image.url"
+            width="1740"
+            height="680"
+            loading="lazy"
+          />
 
           <div class="flex -mt-3 mb-4">
             <template v-for="(team, i) in festival.teams" :key="team.id">

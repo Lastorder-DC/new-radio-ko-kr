@@ -1,5 +1,5 @@
 import fs from 'fs/promises';
-import mkdirp from 'mkdirp';
+import { mkdirp } from '../../common/fs.mjs';
 import Client from './Client.mjs';
 
 export default class ImageWriter extends Client {
@@ -9,6 +9,10 @@ export default class ImageWriter extends Client {
   dir = 'dist/status-screenshots'; // `/screenshots` points to the page used by puppeteer
 
   async send(status, generator) {
+    if (!status.media?.length) {
+      return;
+    }
+
     await mkdirp(this.dir);
 
     let imgFilename = `${this.dir}/${generator.key}.png`;

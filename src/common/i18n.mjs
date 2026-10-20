@@ -50,31 +50,57 @@ export const regionalLocales = {
 export const defaultLocale = locales.find(l => l.code === 'ko-KR');
 
 const datetimeFormats = {
+  weekday: { weekday: 'short' },
   dateTimeShort: { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' },
   dateTimeShortWeekday: { month: 'numeric', weekday: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' },
   time: { hour: 'numeric', minute: '2-digit' },
 };
 
 let i18n = null;
+let storageListenerAdded = false;
+let fixedLocale = null;
+let localeLoading = Promise.resolve();
+const missingScreenshotTranslations = new Set();
 
-export function initializeI18n() {
+export function initializeI18n({ locale = null, timeZone = null, strict = false } = {}) {
   if (!i18n) {
+    fixedLocale = locale ? locales.find(l => l.code === locale) : null;
+
+    if (locale && !fixedLocale) throw new Error(`Unsupported locale: ${locale}`);
+
+    const formats = Object.fromEntries(Object.entries(datetimeFormats).map(([key, value]) => [
+      key,
+      timeZone ? { ...value, timeZone, hourCycle: 'h23' } : value,
+    ]));
+
     i18n = createI18n({
       locale: currentLocale().code,
-      fallbackLocale: 'en-US',
+      fallbackLocale: strict ? false : 'en-US',
+      missing: strict ? (locale, key) => { missingScreenshotTranslations.add(key); } : undefined,
       messages: { ...languages },
-      datetimeFormats: locales.reduce((result, locale) => ({ ...result, [locale.code]: datetimeFormats }), {}),
+      datetimeFormats: locales.reduce((result, locale) => ({ ...result, [locale.code]: formats }), {}),
       pluralRules: {
         'ru-RU': ruPluralization,
       },
     });
 
-    // Listen for local storage changes
-    window.addEventListener('storage', reload);
+    // Listen for local storage changes (guard prevents duplicate listeners in HMR)
+    if (!storageListenerAdded) {
+      window.addEventListener('storage', reload);
+      storageListenerAdded = true;
+    }
     reload();
   }
 
   return i18n;
+}
+
+export function waitForLocale() {
+  return localeLoading;
+}
+
+export function screenshotTranslationErrors() {
+  return [...missingScreenshotTranslations];
 }
 
 // Adapted from: https://vue-i18n.intlify.dev/guide/essentials/pluralization.html#custom-pluralization
@@ -97,7 +123,8 @@ function ruPluralization(choice, choicesLength, orgRule) {
 
 function reload() {
   i18n.global.locale.value = currentLocale().code;
-  loadLocale();
+  localeLoading = loadLocale();
+  localeLoading.catch(error => console.error(error));
 
   switch (currentLocale().code) {
     case 'zh-CN':
@@ -119,12 +146,11 @@ function reload() {
 
 async function loadLocale() {
   let locale = currentLocale().code;
-  let response = await fetch(`/data/locale/${locale}.json`);
+  let baseUrl = import.meta.env.VITE_DATA_FROM || '';
+  let response = await fetch(`${baseUrl}/data/locale/${locale}.json`);
 
   if (!response.ok) {
-    console.error(response);
-
-    return;
+    throw new Error(`Failed to load locale ${locale}: ${response.status} ${response.statusText}`);
   }
 
   let json = await response.json();
@@ -136,7 +162,7 @@ async function loadLocale() {
 }
 
 function currentLocale() {
-  return preferredLocale() || detectLocale();
+  return fixedLocale || preferredLocale() || detectLocale();
 }
 
 function preferredLocale() {

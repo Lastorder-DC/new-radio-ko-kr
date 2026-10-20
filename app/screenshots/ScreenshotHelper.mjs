@@ -1,6 +1,4 @@
-import { URL } from 'url';
-import puppeteer from 'puppeteer-core';
-import HttpServer from './HttpServer.mjs';
+import createScreenshotDriver from './drivers/createScreenshotDriver.mjs';
 
 const defaultViewport = {
   // Using a 16:9 ratio here by default to match Twitter's image card dimensions
@@ -11,48 +9,29 @@ const defaultViewport = {
 
 export default class ScreenshotHelper
 {
-  /** @type {HttpServer} */
-  #httpServer = null;
-  /** @type {puppeteer.Browser} */
-  #browser = null;
-  /** @type {puppeteer.Page} */
-  #page = null;
+  _driver = null;
+  _driverDependencies;
+  _isOpen = false;
 
   defaultParams = null;
 
-  get isOpen() {
-    return !!this.#browser;
+  constructor(driverDependencies = {}) {
+    this._driverDependencies = driverDependencies;
   }
 
-  /** @type {puppeteer.Page} */
-  get page() {
-    return this.#page;
+  get isOpen() {
+    return this._isOpen;
   }
 
   async open() {
     await this.close();
 
-    // Start the HTTP server
-    this.#httpServer = new HttpServer;
-    await this.#httpServer.open();
-
-    // Connect to Browserless
-    this.#browser = await puppeteer.connect({
-      browserWSEndpoint: process.env.BROWSERLESS_ENDPOINT,
-    });
-
-    // Create a new page and set the viewport
-    this.#page = await this.#browser.newPage();
-    await this.applyViewport();
-  }
-
-  async applyViewport(viewport = {}) {
-    if (this.#page) {
-      await this.#page.setViewport({
-        ...defaultViewport,
-        ...viewport,
-      });
-    }
+    this._driver = createScreenshotDriver(
+      this._driverDependencies.provider ?? process.env.SCREENSHOT_PROVIDER,
+      this._driverDependencies,
+    );
+    await this._driver.open();
+    this._isOpen = true;
   }
 
   async capture(path, options = {}) {
@@ -60,51 +39,30 @@ export default class ScreenshotHelper
       await this.open();
     }
 
-    await this.applyViewport(options.viewport);
-
-    // Navigate to the URL
-    let host = process.env.SCREENSHOT_HOST || 'localhost';
-    let url = new URL(`http://${host}:${this.#httpServer.port}/screenshots/`);
-    url.hash = path;
-
     let params = {
       ...this.defaultParams,
       ...options.params,
     };
+    let route = path;
 
-    if (params) {
-      // We can't use url.searchParams because they need to come after the hash
-      url.hash += '?';
-      url.hash += Object.keys(params)
-        .map(key => `${key}=${params[key]}`)
-        .join('&');
+    if (Object.keys(params).length) {
+      route += '?';
+      route += new URLSearchParams(params).toString();
     }
 
-    await this.#page.goto(url, {
-      waitUntil: 'networkidle0', // Wait until the network is idle
-    });
+    let viewport = {
+      ...defaultViewport,
+      ...options.viewport,
+    };
 
-    // Wait an additional 1000ms
-    await this.#page.waitForNetworkIdle({ idleTime: 1000 });
-
-    // Take the screenshot
-    return await this.#page.screenshot();
+    return await this._driver.capture(route, viewport);
   }
 
   async close() {
-    if (this.#httpServer) {
-      await this.#httpServer.close();
+    if (this._driver) {
+      await this._driver.close();
     }
-    this.#httpServer = null;
-
-    if (this.#page) {
-      await this.#page.close();
-    }
-    this.#page = null;
-
-    if (this.#browser) {
-      await this.#browser.close();
-    }
-    this.#browser = null;
+    this._driver = null;
+    this._isOpen = false;
   }
 }

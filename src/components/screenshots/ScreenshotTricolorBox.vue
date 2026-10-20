@@ -19,14 +19,14 @@
               />
             </div>
             <div class="text-shadow">
-              Tricolor Turf War
+              {{ $t('screenshots.tricolor') }}
             </div>
           </div>
 
           <div>
             <div v-if="type.badge" class="flex items-center">
               <img :src="type.img" class="h-8" />
-              <div v-if="type.badge" class="font-splatoon2 text-xl bg-splatoon-blue px-2 drop-shadow rounded">
+              <div v-if="type.badge" class="font-splatoon2 text-xl bg-splatoon-blue px-2 drop-shadow-sm rounded-sm">
                 {{ $t(type.badge) }}
               </div>
             </div>

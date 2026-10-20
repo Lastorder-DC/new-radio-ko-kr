@@ -1,6 +1,6 @@
 <template>
   <TransitionRoot as="template" :show="show">
-    <Dialog as="div" class="relative z-20">
+    <Dialog as="div" class="relative z-20" @close="$emit('close')">
       <TransitionChild
         as="template"
         enter="ease-out duration-300"
@@ -10,7 +10,7 @@
         leave-from="opacity-100"
         leave-to="opacity-0"
       >
-        <div class="fixed inset-0 bg-zinc-900/80 transition-opacity backdrop-blur-sm" />
+        <div class="fixed inset-0 bg-zinc-900/80 transition-opacity backdrop-blur-xs" />
       </TransitionChild>
 
       <div class="fixed inset-0 z-20" :class="noScroll ? 'overflow-hidden' : 'overflow-y-auto'">
@@ -45,4 +45,6 @@ defineProps({
   noScroll: Boolean,
   innerClass: String,
 });
+
+defineEmits(['close']);
 </script>

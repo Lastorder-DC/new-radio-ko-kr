@@ -1,11 +1,11 @@
 <template>
-  <ModalDialog inner-class="-rotate-1 relative">
+  <ModalDialog inner-class="-rotate-1 relative" @close="$emit('close')">
     <div class="bg-zinc-100 p-2">
       <button class="text-zinc-300 bg-zinc-600/50 rounded-full p-1 absolute top-3 right-3" @click="$emit('close')">
         <span class="sr-only">Close</span>
         <XMarkIcon class="h-4 w-4" aria-hidden="true" />
       </button>
-      <img v-if="imgUrl" :src="imgUrl" />
+      <img v-if="imgUrl" :src="imgUrl" width="800" height="450" />
     </div>
 
     <div class="absolute -top-8 w-full text-center">

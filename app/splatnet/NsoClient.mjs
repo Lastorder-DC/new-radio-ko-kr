@@ -1,19 +1,59 @@
-// eslint-disable-next-line import/no-unresolved
+import { createHmac } from 'node:crypto';
 import CoralApi from 'nxapi/coral';
-import { addUserAgent, setClientAuthentication, ClientAssertionProviderInterface } from 'nxapi';
+import { addUserAgent, setClientAuthentication } from 'nxapi';
 import pLimit from 'p-limit';
 import ValueCache from '../common/ValueCache.mjs';
 import prefixedConsole from '../common/prefixedConsole.mjs';
+import { calculateCacheExpiry } from '../common/util.mjs';
 
 const coralLimit = pLimit(1);
 const webServiceLimit = pLimit(1);
 
 let _nxapiInitialized = false;
 
+class SharedSecretAssertionProvider {
+  constructor(clientId, sharedSecret) {
+    this.clientId = clientId;
+    this.sharedSecret = sharedSecret;
+    this.scope = 'ca:gf ca:er ca:dr';
+  }
+
+  async create(aud, exp = 300) {
+    const now = Math.floor(Date.now() / 1000);
+
+    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+    const payload = Buffer.from(JSON.stringify({
+      typ: 'client_assertion',
+      iss: this.clientId,
+      aud,
+      exp: now + exp,
+      iat: now,
+    })).toString('base64url');
+
+    const signData = `${header}.${payload}`;
+    const signature = createHmac('sha256', this.sharedSecret)
+      .update(signData)
+      .digest()
+      .toString('base64url');
+
+    return {
+      assertion: `${signData}.${signature}`,
+      type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+    };
+  }
+}
+
 function initializeNxapi() {
   if (!_nxapiInitialized) {
     addUserAgent(process.env.USER_AGENT);
-    setClientAuthentication({ id: process.env.NXAPI_AUTH_CLIENT_PUBLIC, scope: 'ca:gf ca:er ca:dr' });
+
+    if (process.env.NXAPI_CLIENT_ID && process.env.NXAPI_SHARED_SECRET) {
+      setClientAuthentication(
+        new SharedSecretAssertionProvider(process.env.NXAPI_CLIENT_ID, process.env.NXAPI_SHARED_SECRET),
+      );
+    } else if (process.env.NXAPI_AUTH_CLIENT_PUBLIC) {
+      setClientAuthentication({ id: process.env.NXAPI_AUTH_CLIENT_PUBLIC, scope: 'ca:gf ca:er ca:dr' });
+    }
   }
 
   _nxapiInitialized = true;
@@ -63,13 +103,6 @@ export default class NsoClient
     return `nso.${token}`;
   }
 
-  _calculateCacheExpiry(expiresIn) {
-    let expires = Date.now() + expiresIn * 1000;
-
-    // Expire 5min early to make sure we have time to execute requests
-    return expires - 5 * 60 * 1000;
-  }
-
   // Coral API
 
   _getCoralCache() {
@@ -94,7 +127,7 @@ export default class NsoClient
     this.console.info('Creating Coral session...');
     let { data } = await CoralApi.createWithSessionToken(this.nintendoToken);
 
-    let expires = this._calculateCacheExpiry(data.credential.expiresIn);
+    let expires = calculateCacheExpiry(data.credential.expiresIn);
     this.console.debug(`Caching Coral session until: ${expires}`);
     await this._getCoralCache().setData(data, expires);
 
@@ -128,7 +161,7 @@ export default class NsoClient
     this.console.info(`Creating web service token for ID ${id}...`);
     let { result } = await coral.getWebServiceToken(id);
 
-    let expires = this._calculateCacheExpiry(result.expiresIn);
+    let expires = calculateCacheExpiry(result.expiresIn);
     this.console.debug(`Caching web service token for ID ${id} until: ${expires}`);
     await tokenCache.setData(result, expires);
 

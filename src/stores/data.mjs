@@ -1,30 +1,48 @@
 import { acceptHMRUpdate, defineStore } from 'pinia';
 import { computed, ref, shallowRef } from 'vue';
+import { getEmptyPreviewData, usePagePreviewStore } from './pagePreview.mjs';
 
 // Endpoint store definition (used for each individual data endpoint)
 function defineEndpointStore(id, endpoint, transform = null) {
   return defineStore(`data/${id}`, () => {
-    const data = shallowRef(null);
+    const loadedData = shallowRef(null);
+    const preview = import.meta.env?.DEV ? usePagePreviewStore() : null;
+    const data = import.meta.env?.DEV
+      ? computed(() => preview.mode === 'empty' ? getEmptyPreviewData(id) : loadedData.value)
+      : loadedData;
     const isUpdating = ref(false);
+    const error = ref(null);
+    let pending;
 
-    async function update() {
+    function update() {
+      if (pending) return pending;
+
       isUpdating.value = true;
+      error.value = null;
 
+      pending = fetchData().finally(() => {
+        isUpdating.value = false;
+        pending = null;
+      });
+
+      return pending;
+    }
+
+    async function fetchData() {
       try {
         let baseUrl = import.meta.env.VITE_DATA_FROM || '';
         let response = await fetch(baseUrl + endpoint);
 
         if (!response.ok) {
-          console.error(response);
-
-          return;
+          throw new Error(`${response.status} ${response.statusText}`);
         }
 
         let json = await response.json();
 
         setData(json);
-      } finally {
-        isUpdating.value = false;
+      } catch (cause) {
+        error.value = cause instanceof Error ? cause.message : String(cause);
+        console.error(`Failed to fetch ${endpoint}: ${error.value}`);
       }
     }
 
@@ -33,10 +51,15 @@ function defineEndpointStore(id, endpoint, transform = null) {
         json = transform(json);
       }
 
-      data.value = json;
+      if (json === null || typeof json !== 'object') {
+        throw new Error('Missing data payload');
+      }
+
+      loadedData.value = json;
+      error.value = null;
     }
 
-    return { data, update, setData, isUpdating };
+    return { data, loadedData, update, setData, isUpdating, error };
   });
 }
 
@@ -52,47 +75,64 @@ export const useDataStore = defineStore('data', () => {
     coop: useCoopDataStore(),
     festivals: useFestivalsDataStore(),
   };
-  let updateDataTimer;
+  let refreshTimer;
+  let lastRefresh = 0;
 
   function updateAll() {
     return Promise.all(Object.values(stores).map(s => s.update()));
   }
 
   const isUpdating = computed(() => Object.values(stores).some(s => s.isUpdating));
+  const isLoaded = computed(() => Object.values(stores).every(s => s.data !== null));
+
+  function refresh() {
+    const now = Date.now();
+    if (now - lastRefresh < 60_000) return;
+    lastRefresh = now;
+    updateAll();
+  }
+
+  function msUntilNextHour() {
+    const next = new Date();
+    next.setMinutes(0, 0, 0);
+    next.setHours(next.getHours() + 1);
+    return next - new Date();
+  }
+
+  function scheduleNextRefresh() {
+    const fiveMinutes = 5 * 60_000;
+    const jitter = Math.floor(Math.random() * 36 + 25) * 1000;
+    const untilHour = msUntilNextHour() + jitter;
+    const delay = Math.min(fiveMinutes, untilHour);
+
+    refreshTimer = setTimeout(() => {
+      refresh();
+      scheduleNextRefresh();
+    }, delay);
+  }
+
+  function onVisibilityChange() {
+    if (document.visibilityState === 'visible') {
+      refresh();
+    }
+  }
 
   function startUpdating() {
-    if (updateDataTimer) {
-      return;
-    }
-
-    updateAll();
-
-    let date = new Date;
-
-    // If we're more than 20 seconds past the current hour, schedule the update for the next hour
-    if (date.getMinutes() !== 0 || date.getSeconds() >= 20)
-      date.setHours(date.getHours() + 1);
-    date.setMinutes(0);
-
-    // Random number of seconds past the hour (so all open browsers don't hit the server at the same time)
-    let minSec = 25;
-    let maxSec = 60;
-    date.setSeconds(Math.floor(Math.random() * (maxSec - minSec + 1)) + minSec);
-
-    // Set the timeout
-    updateDataTimer = setTimeout(() => {
-      updateDataTimer = null;
-      startUpdating();
-    }, (date - new Date));
+    if (refreshTimer) return;
+    refresh();
+    scheduleNextRefresh();
+    document.addEventListener('visibilitychange', onVisibilityChange);
   }
 
   function stopUpdating() {
-    clearInterval(updateDataTimer);
-    updateDataTimer = null;
+    clearTimeout(refreshTimer);
+    refreshTimer = null;
+    document.removeEventListener('visibilitychange', onVisibilityChange);
   }
 
   return {
     updateAll,
+    isLoaded,
     isUpdating,
     startUpdating,
     stopUpdating,

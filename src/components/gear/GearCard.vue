@@ -1,97 +1,90 @@
 <template>
   <div class="relative">
-    <img src="@/assets/img/gesotown-tape-blob-bg.png" />
+    <img width="952" height="972" src="@/assets/img/gesotown-tape-blob-bg.png" />
 
     <div class="absolute inset-0 flex flex-col items-center justify-evenly my-4">
-      <!-- Gear Image -->
-      <div>
-        <img :src="gear.image.url" class="h-20 w-20 lg:h-24 lg:w-24 xl:h-28 xl:w-28" />
-      </div>
-
-      <!-- Powers -->
-      <div>
-        <div class="flex items-center space-x-px">
-          <div :title="$t(`splatnet.powers.${gear.primaryGearPower.__splatoon3ink_id}.name`, gear.primaryGearPower.name)" class="bg-black rounded-full">
-            <img :src="gear.primaryGearPower.image.url" class="h-8" />
-          </div>
-
-          <div v-for="(power, i) in gear.additionalGearPowers" :key="i" :title="$t(`splatnet.powers.${power.__splatoon3ink_id}.name`, power.name)" class="bg-black rounded-full">
-            <img :src="power.image.url" class="h-6" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Name -->
-      <div class="relative text-center">
-        <div class="mx-6">
-          <img src="@/assets/img/gesotown-tape.svg" />
-        </div>
-        <div class="absolute inset-0 flex items-center justify-center">
-          <div class="font-splatoon2 text-sm xl:text-base ss:text-lg text-shadow">
-            {{ $t(`splatnet.gear.${gear.__splatoon3ink_id}.name`, gear.name) }}
-          </div>
-        </div>
-      </div>
-
-      <!-- Price -->
-      <div class="flex items-center space-x-2">
+      <template v-if="loading">
+        <SkeletonBlock class="h-20 w-20 lg:h-24 lg:w-24 xl:h-28 xl:w-28" />
+        <SkeletonBlock class="h-8 w-24" />
+        <SkeletonBlock class="h-5 w-3/4" />
+        <SkeletonBlock class="h-6 w-16" />
+      </template>
+      <template v-else>
+        <!-- Gear Image -->
         <div>
-          <img src="@/assets/img/gesotown-coin.svg" />
+          <img :src="gear.image.url" class="h-20 w-20 lg:h-24 lg:w-24 xl:h-28 xl:w-28" />
         </div>
-        <div class="font-splatoon1">
-          {{ price }}
+
+        <!-- Powers -->
+        <div>
+          <div class="flex items-center space-x-px">
+            <div :title="$t(`splatnet.powers.${gear.primaryGearPower.__splatoon3ink_id}.name`, gear.primaryGearPower.name)" class="bg-black rounded-full">
+              <img :src="gear.primaryGearPower.image.url" class="h-8 w-8" />
+            </div>
+
+            <div v-for="(power, i) in gear.additionalGearPowers" :key="i" :title="$t(`splatnet.powers.${power.__splatoon3ink_id}.name`, power.name)" class="bg-black rounded-full">
+              <img :src="power.image.url" class="h-6 w-6" />
+            </div>
+          </div>
         </div>
-      </div>
+
+        <!-- Name -->
+        <div class="relative text-center">
+          <div class="mx-6">
+            <img width="246" height="38" src="@/assets/img/gesotown-tape.svg" />
+          </div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="font-splatoon2 text-sm xl:text-base ss:text-lg text-shadow">
+              {{ $t(`splatnet.gear.${gear.__splatoon3ink_id}.name`, gear.name) }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Price -->
+        <div class="flex items-center space-x-2">
+          <div>
+            <img width="19" height="17" src="@/assets/img/gesotown-coin.svg" />
+          </div>
+          <div class="font-splatoon1">
+            {{ price }}
+          </div>
+        </div>
+      </template>
     </div>
 
     <!-- Brand -->
     <div class="absolute top-0 right-10">
       <div class="relative rotate-2">
-        <img src="@/assets/img/gesotown-brand-bg.png" class="w-10" />
+        <img width="82" height="71" src="@/assets/img/gesotown-brand-bg.png" class="w-10" />
         <div class="absolute inset-0 p-2">
-          <img :src="gear.brand.image.url" class="w-full h-full" :title="$t(`splatnet.brands.${gear.brand.id}.name`, gear.brand.name)" />
+          <SkeletonBlock v-if="loading" class="w-full h-full" />
+          <img v-else :src="gear.brand.image.url" class="w-full h-full" :title="$t(`splatnet.brands.${gear.brand.id}.name`, gear.brand.name)" />
         </div>
       </div>
     </div>
 
-    <!-- Time left/Order button -->
-    <div class="absolute top-1 left-6 space-y-2">
-      <div v-if="false" class="hidden mobile:block -ml-4">
-        <a :href="shopUrl">
-          <SquidTape
-            class="font-splatoon2 text-sm text-black rounded-sm -rotate-3"
-            bg="bg-splatoon-yellow"
-            squid-bg="bg-black"
-            border="border border-black"
-          >
-            <div class="px-1">
-              {{ $t('gear.order') }}
-            </div>
-          </SquidTape>
-        </a>
+    <!-- Time left -->
+    <div class="absolute top-1 left-6">
+      <div v-if="loading" class="inline-block text-xs bg-zinc-200/30 rounded-sm px-1 py-px font-semibold">
+        <SkeletonBlock class="h-4 w-16" />
       </div>
-
-      <div class="inline-block text-xs bg-zinc-200 bg-opacity-30 rounded px-1 py-px font-semibold">
-        {{ $t('time.left', { time: formatDurationHoursFromNow(props.gear.saleEndTime) }) }}
-      </div>
+      <GearExpiry v-else :end-time="props.gear.saleEndTime" />
     </div>
   </div>
 </template>
 
 <script setup>
+import SkeletonBlock from '@/components/loading/SkeletonBlock.vue';
 import { computed } from 'vue';
-import SquidTape from '@/components/SquidTape.vue';
-import { formatDurationHoursFromNow } from '@/common/time';
-import { getGesotownGearUrl } from '@/common/links';
+import GearExpiry from './GearExpiry.vue';
 
 const props = defineProps({
   gear: Object,
+  loading: Boolean,
 });
 
 const price = computed(() => props.gear.price);
 const gear = computed(() => props.gear.gear);
-
-const shopUrl = computed(() => getGesotownGearUrl(props.gear.id));
 </script>
 
 <style scoped>

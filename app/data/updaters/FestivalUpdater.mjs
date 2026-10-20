@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
-import jsonpath from 'jsonpath';
 import pLimit from 'p-limit';
+import jsonpath from '../../common/jsonpath.mjs';
 import { getFestId } from '../../common/util.mjs';
 import ValueCache from '../../common/ValueCache.mjs';
 import { regionTokens } from '../../splatnet/NsoClient.mjs';
@@ -137,14 +137,12 @@ export default class FestivalUpdater extends DataUpdater
 
   async _formatDataForWrite(data) {
     // Combine this region's data with the other regions' data.
-    let result = null;
+    let result = {};
     try {
-      result = await fs.readFile(this.getPath(this.filename));
-    } catch (e) {
+      result = JSON.parse(await fs.readFile(this.getPath(this.filename)));
+    } catch {
       //
     }
-
-    result = result ? JSON.parse(result) : {};
 
     result[this.region] = data;
 

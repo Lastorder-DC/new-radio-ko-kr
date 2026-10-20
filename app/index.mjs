@@ -9,11 +9,17 @@ import ImageWriter from './social/clients/ImageWriter.mjs';
 import BlueskyClient from './social/clients/BlueskyClient.mjs';
 import ThreadsClient from './social/clients/ThreadsClient.mjs';
 import { archiveData } from './data/DataArchiver.mjs';
+import { compressArchivesFromCli } from './data/ArchiveCompressor.mjs';
+import { pruneArchivesFromCli } from './data/ArchivePruner.mjs';
+import { reportArchiveStatsFromCli } from './data/ArchiveStats.mjs';
+import { verifyArchivesFromCli } from './data/ArchiveVerifyCommand.mjs';
 import { sentryInit } from './common/sentry.mjs';
 import { sync, syncUpload, syncDownload } from './sync/index.mjs';
+import { updateAvatars } from './social/updateAvatars.mjs';
+import listBufferChannels from './social/buffer/listChannels.mjs';
 
 consoleStamp(console);
-dotenv.config();
+dotenv.config({ quiet: true });
 sentryInit();
 
 const actions = {
@@ -24,20 +30,25 @@ const actions = {
   socialTestBluesky: () => testStatuses([new BlueskyClient]),
   socialTestImage: () => testStatuses([new ImageWriter]),
   socialTestThreads: () => testStatuses([new ThreadsClient]),
+  bufferChannels: listBufferChannels,
   splatnet: update,
   warmCaches,
   dataArchive: archiveData,
+  archiveCompress: (...args) => compressArchivesFromCli(args),
+  archivePrune: (...args) => pruneArchivesFromCli(args),
+  archiveStats: (...args) => reportArchiveStatsFromCli(args),
+  archiveVerify: (...args) => verifyArchivesFromCli(args),
   sync,
   syncUpload,
   syncDownload,
+  updateAvatars,
 };
 
 const command = process.argv[2];
 const params = process.argv.slice(3);
 const action = actions[command];
 if (action) {
-  action(...params);
+  await action(...params);
 } else {
   console.error(`Unrecognized command: ${command}`);
 }
-

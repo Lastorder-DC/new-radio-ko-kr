@@ -4,14 +4,14 @@
       <div>
         <div class="flex flex-col items-center -mt-10 -space-y-2">
           <SquidTape
-            class="font-splatoon2 text-2xl text-black rounded-sm -rotate-2 z-10"
+            class="font-splatoon2 text-2xl text-black rounded-xs -rotate-2 z-10"
             bg="bg-splatoon-green"
             squid-bg="bg-black"
             border="border-2 border-black"
             squid-size="20px"
           >
             <div class="px-3 py-1">
-              오늘의 픽업
+              {{ $t('gear.dailydrop') }}
             </div>
           </SquidTape>
 
@@ -19,7 +19,7 @@
             <img src="@/assets/img/gesotown-daily-drop-bg.png" class="w-80" />
             <div class="absolute inset-0 flex items-center ml-4">
               <div class="font-splatoon2 text-2xl">
-                {{ brand?.brand.name }}
+                {{ brand ? $t(`splatnet.brands.${brand.brand.id}.name`, brand.brand.name) : '' }}
               </div>
             </div>
           </div>

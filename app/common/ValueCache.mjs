@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import mkdirp from 'mkdirp';
+import { mkdirp } from './fs.mjs';
 export default class ValueCache
 {
   constructor(key) {
@@ -16,7 +16,7 @@ export default class ValueCache
       let data = await fs.readFile(this.path);
 
       return JSON.parse(data);
-    } catch (e) {
+    } catch {
       return null;
     }
   }
