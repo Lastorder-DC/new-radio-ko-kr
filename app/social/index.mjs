@@ -41,7 +41,7 @@ export function defaultStatusGenerators(options = {}) {
   ];
 }
 
-export function defaultClients(locale = 'en-US') {
+export function defaultClients(locale = process.env.SOCIAL_LOCALE || 'ko-KR') {
   if (locale === 'ja-JP') {
     return [
       new BufferTwitterClient({
@@ -66,10 +66,10 @@ export function defaultClients(locale = 'en-US') {
     new BlueskyClient,
     new ThreadsClient,
     new ImageWriter,
-  ];
+  ].map(client => Object.assign(client, { locale }));
 }
 
-export function defaultStatusGeneratorManager(locale = 'en-US') {
+export function defaultStatusGeneratorManager(locale = process.env.SOCIAL_LOCALE || 'ko-KR') {
   return new StatusGeneratorManager(
     defaultStatusGenerators({ locale }),
     defaultClients(locale),
@@ -77,17 +77,17 @@ export function defaultStatusGeneratorManager(locale = 'en-US') {
 }
 
 export function testStatusGeneratorManager(additionalClients) {
+  const locale = process.env.SOCIAL_LOCALE || 'ko-KR';
+
   return new StatusGeneratorManager(
-    defaultStatusGenerators(),
-    [new FileWriter, ...additionalClients],
+    defaultStatusGenerators({ locale }),
+    [new FileWriter, ...additionalClients].map(client => Object.assign(client, { locale })),
   );
 }
 
 export async function sendStatuses() {
-  const managers = [
-    defaultStatusGeneratorManager(),
-    defaultStatusGeneratorManager('ja-JP'),
-  ];
+  const locales = [...new Set([process.env.SOCIAL_LOCALE || 'ko-KR', 'ja-JP'])];
+  const managers = locales.map(locale => defaultStatusGeneratorManager(locale));
 
   await Promise.all(managers.map(manager => manager.sendStatuses()));
 

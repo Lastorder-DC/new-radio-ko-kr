@@ -16,13 +16,13 @@
             </div>
             <div>
               <img
-                v-if="!japanese"
+                v-if="!localized"
                 src="@/assets/img/bluesky-white.svg"
                 width="15"
                 height="15"
                 class="inline"
               />
-              {{ japanese ? 'Splatoon3.ink' : '@splatoon3.ink' }}
+              {{ localized ? 'Splatoon3.ink' : '@splatoon3.ink' }}
             </div>
           </div>
         </div>
@@ -30,7 +30,7 @@
           <div class="text-zinc-100">
             {{ timestamps[0] }}
           </div>
-          <div v-if="!japanese" class="grid grid-flow-col grid-rows-2 gap-x-4 text-xs leading-5 text-right">
+          <div v-if="!localized" class="grid grid-flow-col grid-rows-2 gap-x-4 text-xs leading-5 text-right">
             <div v-for="timestamp in timestamps.slice(1)" :key="timestamp">
               {{ timestamp }}
             </div>
@@ -63,9 +63,9 @@ const props = defineProps({
 
 const route = useRoute();
 const { locale } = useI18n();
-const japanese = computed(() => locale.value === 'ja-JP');
+const localized = computed(() => ['ja-JP', 'ko-KR'].includes(locale.value));
 
-provide(screenshotAbsoluteTimesKey, japanese);
+provide(screenshotAbsoluteTimesKey, localized);
 
 const data = useDataStore();
 const time = useTimeStore();
@@ -116,7 +116,12 @@ const timestampFormats = [
 const timestamps = computed(() => {
   const date = new Date(time.now);
 
-  const formats = japanese.value ? timestampFormats.slice(-1) : timestampFormats;
+  const formats = locale.value === 'ko-KR'
+    ? [new Intl.DateTimeFormat('ko-KR', {
+      timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short',
+    })]
+    : localized.value ? timestampFormats.slice(-1) : timestampFormats;
 
   return formats.map(format => format.format(date).replace(/\s+at\s+/u, ' '));
 });

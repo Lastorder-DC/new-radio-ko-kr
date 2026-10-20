@@ -2,10 +2,12 @@ import get from 'lodash/get.js';
 import fs from 'node:fs/promises';
 import english from './en-US.json' with { type: 'json' };
 import japanese from './ja-JP.json' with { type: 'json' };
+import korean from './ko-KR.json' with { type: 'json' };
 
 const catalogs = new Map([
   ['en-US', english],
   ['ja-JP', japanese],
+  ['ko-KR', korean],
 ]);
 
 export class MissingTranslationError extends Error {}
@@ -45,8 +47,8 @@ export default class SocialMessages {
   }
 
   date(value) {
-    return new Intl.DateTimeFormat('ja-JP', {
-      timeZone: 'Asia/Tokyo',
+    return new Intl.DateTimeFormat(this.locale, {
+      timeZone: this.locale === 'ko-KR' ? 'Asia/Seoul' : 'Asia/Tokyo',
       month: 'numeric',
       day: 'numeric',
       hour: 'numeric',

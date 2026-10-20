@@ -4,7 +4,7 @@ import FileWriter from './clients/FileWriter.mjs';
 import ScreenshotHelper from '../screenshots/ScreenshotHelper.mjs';
 
 export async function previewStatuses(locale = 'en-US', date, onlyGenerator) {
-  if (!['en-US', 'ja-JP'].includes(locale)) throw new Error('Preview locale must be en-US or ja-JP');
+  if (!['en-US', 'ja-JP', 'ko-KR'].includes(locale)) throw new Error('Preview locale must be en-US, ja-JP or ko-KR');
 
   const now = date ? Date.parse(date) : null;
   if (date && !Number.isFinite(now)) throw new Error('Preview date must be an ISO date and time');

@@ -107,20 +107,20 @@ npm run splatnet:quick
 
 S3/R2는 선택 사항이다. 로컬 파일 기반 운용도 가능하다. Docker에서는 직접 빌드한 앱과 Browserless를 같은 네트워크에 두고 `/app/storage`, `/app/dist/data`, `/app/dist/assets/splatnet`을 영속화한다. 생성된 이미지도 보관하려면 `/app/dist/status-screenshots`를 영속화한다. 데이터 파일만 남겨 이미지 원본/가공 파일을 잃으면 캐시에 기록된 이미지가 깨질 수 있다.
 
-## 한국어 봇을 위해 남은 작업
+## 한국어 봇 지원
 
-프런트엔드 기본 locale, 기본 수집 언어, 기존 한국어 번역 수정은 보존했다. 그러나 upstream의 새로운 SNS 번역 시스템은 `en-US`와 `ja-JP`만 지원한다. 한국어 게임 데이터가 있다고 게시 문구까지 한국어가 되는 것은 아니다.
+프런트엔드 기본 locale, 기본 수집 언어, 기존 한국어 번역 수정을 보존하고, SNS 문구·대체 텍스트의 `ko-KR` 지원을 추가했다. 기본 운영 locale은 한국어이며 `SOCIAL_LOCALE=en-US`로 영어를 선택할 수 있다. 캡처 URL의 locale이 우선하므로 브라우저 언어만 바꾸는 것으로는 충분하지 않다.
 
-- `app/social/i18n/ko-KR.json`을 추가하고 `SocialMessages.mjs`에 등록한다.
-- 날짜 표시를 locale에 맞게 분기하여 한국어에서는 `ko-KR`/`Asia/Seoul`을 사용한다. 현재 비영어 날짜 formatter는 일본어 고정이다.
-- 한국어 manager와 client locale을 함께 설정한다. `StatusGeneratorManager`는 게시 locale과 계정 locale이 다르면 전송을 거절한다.
+- `app/social/i18n/ko-KR.json`에 한국어 문구와 이미지 대체 텍스트를 등록했다.
+- 게임 명칭은 공개 `locale/ko-KR.json`에서 ID로 조회한다. 누락된 번역은 영어로 게시하지 않고 오류로 처리한다.
+- 날짜·스크린샷은 `ko-KR`/`Asia/Seoul`을 사용한다. 캡처 locale을 `ko-KR`로 전달하며 한국 시간만 표시한다.
+- 기본 manager와 각 client의 locale도 동일하게 설정한다.
 - `defaultStatusGenerators()`를 일정/연어런 중심으로 제한한다. 현재 기본값은 기어/페스티벌/이벤트 예고도 포함한다.
-- 스크린샷 locale과 시간대도 한국어/한국 시간으로 맞춘다. 현재 layout에는 영어/일본어를 전제로 한 부분이 있다.
 - Mastodon, Bluesky, Threads, Buffer 경유 Twitter 등의 클라이언트가 있다. 직접 TwitterClient는 기본 구성에서 비활성화되어 있다. Discord/Telegram 등은 새 Client 구현이 필요하다.
 - 전체 문구, 이미지 대체 텍스트, 미스터리 무기, 빅 런, 팀 콘테스트, 일정 없음, 데이터 지연 시나리오를 미리보기로 확인한다.
 
-실제 게시하지 않는 파일 출력 테스트/미리보기 기능은 존재하지만 기본 preview는 영어/일본어만 허용한다. 한국어를 추가할 때 preview와 번역 테스트도 함께 확장한다. 계정 인증, 배포, 실제 전송은 이번 분석/머지 범위에서 실행하지 않았다.
+실제 게시하지 않는 파일 출력 미리보기는 영어/일본어/한국어를 지원한다. `npm run social:preview -- ko-KR`로 한국어 미리보기를 생성한다. 공개 JSON을 사용한 마스토돈 테스트에서 본문·이미지·대체 텍스트의 한국어 출력과 서버의 게시 언어 `ko`를 확인했다. Nintendo 인증과 운영 배포는 별도다.
 
 ## 이번 머지 검증
 
-Node 24.22.0에서 `npm ci`, `npm run lint`, `npm run build`, `npm test`가 성공했다. 테스트는 350개 통과, 1개 skip이다. nxapi 실제 설치 버전과 런타임 version 표기의 차이를 재현했고, NsoClient 모듈 import도 성공했다. build에는 500 kB 초과 chunk 경고가 있다. Nintendo 로그인과 SNS 게시 성공은 별도 검증이 필요하다.
+Node 24.22.0에서 `npm ci`, `npm run lint`, `npm run build`, `npm test`가 성공했다. 테스트는 350개 통과, 1개 skip이다. nxapi 실제 설치 버전과 런타임 version 표기의 차이를 재현했고, NsoClient 모듈 import도 성공했다. build에는 500 kB 초과 chunk 경고가 있다. Nintendo 로그인은 별도 검증이 필요하다. 후속 한국어 마스토돈 테스트는 공개 JSON만 사용했으며 일정·연어런 각 1건 게시를 확인했다.

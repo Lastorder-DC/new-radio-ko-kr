@@ -23,7 +23,7 @@
         <div v-if="absoluteTimes" class="inline-block text-lg">
           {{ $d(schedule.startTime, 'dateTimeShort') }}
           &ndash;
-          {{ $d(schedule.endTime, 'dateTimeShort') }} JST
+          {{ $d(schedule.endTime, 'dateTimeShort') }} {{ $i18n.locale === 'ko-KR' ? 'KST' : 'JST' }}
         </div>
         <div v-else-if="time.isUpcoming(schedule.startTime)" class="inline-block">
           {{ $t('salmonrun.opens') }}

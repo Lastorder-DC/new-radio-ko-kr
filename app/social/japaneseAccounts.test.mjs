@@ -19,7 +19,8 @@ afterEach(() => {
 });
 
 describe('Japanese account routing', () => {
-  it('includes both languages in the normal publishing run', async () => {
+  it.each(['ko-KR', 'en-US', 'ja-JP'])('routes %s and Japanese without duplicate managers', async locale => {
+    vi.stubEnv('SOCIAL_LOCALE', locale);
     const locales = [];
 
     vi.spyOn(StatusGeneratorManager.prototype, 'sendStatuses').mockImplementation(async function () {
@@ -28,7 +29,7 @@ describe('Japanese account routing', () => {
 
     await sendStatuses();
 
-    expect(locales).toEqual(['en-US', 'ja-JP']);
+    expect(locales).toEqual([...new Set([locale, 'ja-JP'])]);
   });
 
   it.each(['twitter.jp', 'bluesky.jp'])('enables %s independently when its credentials are configured', async key => {

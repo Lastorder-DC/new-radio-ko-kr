@@ -7,11 +7,11 @@ import App from './App.vue';
 import router from './router/screenshots';
 
 const params = new URLSearchParams(window.location.hash.split('?')[1]);
-const locale = params.get('locale') || 'en-US';
+const locale = params.get('locale') || 'ko-KR';
 const i18n = initializeI18n({
   locale,
-  timeZone: locale === 'ja-JP' ? 'Asia/Tokyo' : null,
-  strict: locale === 'ja-JP',
+  timeZone: locale === 'ko-KR' ? 'Asia/Seoul' : locale === 'ja-JP' ? 'Asia/Tokyo' : null,
+  strict: ['ja-JP', 'ko-KR'].includes(locale),
 });
 
 const fixedTime = params.has('time') ? Number(params.get('time')) : undefined;
@@ -24,7 +24,7 @@ app.use(router);
 waitForLocale()
   .then(() => app.mount('#app'))
   .catch(error => {
-    if (locale === 'ja-JP') {
+    if (['ja-JP', 'ko-KR'].includes(locale)) {
       document.documentElement.dataset.screenshotError = error.message;
     } else {
       app.mount('#app');

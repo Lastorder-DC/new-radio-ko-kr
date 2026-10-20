@@ -1,0 +1,104 @@
+{
+  "schedule": {
+    "rotation": "스플래툰 3 스테이지 로테이션\n#스플래툰3",
+    "series": "– 카오폴리스 매치(챌린지): {rule}",
+    "open": "– 카오폴리스 매치(오픈): {rule}",
+    "x": "– X 매치: {rule}",
+    "festival": "페스티벌 매치 개최 중!\n#페스티벌 #스플래툰3",
+    "festivalOpen": "– 오픈: {stage1}, {stage2}",
+    "festivalPro": "– 챌린지: {stage1}, {stage2}",
+    "tricolorOne": "– 트리컬러: {stage}",
+    "tricolorTwo": "– 트리컬러: {stage1}, {stage2}",
+    "alt": {
+      "heading": "스플래툰 3 스테이지 로테이션:\n",
+      "regular": "레귤러 매치: {rule} / {stage1}, {stage2}",
+      "series": "카오폴리스 매치(챌린지): {rule} / {stage1}, {stage2}",
+      "open": "카오폴리스 매치(오픈): {rule} / {stage1}, {stage2}",
+      "x": "X 매치: {rule} / {stage1}, {stage2}",
+      "festivalOpen": "페스티벌 매치(오픈): {rule} / {stage1}, {stage2}",
+      "festivalPro": "페스티벌 매치(챌린지): {rule} / {stage1}, {stage2}"
+    }
+  },
+  "gear": {
+    "daily": "오늘의 픽업 브랜드는 {brand}! #스플래툰3",
+    "item": "{icon} {name} ({power})",
+    "regular": "오징어넷에서 판매 중!\n{icon} {name} ({power})\n#스플래툰3"
+  },
+  "challenge": {
+    "open": "이벤트 매치 개최 중!\n{name}\n{description}",
+    "stages": "{period}\n{rule} / {stage1}, {stage2}\n#이벤트매치 #스플래툰3"
+  },
+  "salmon": {
+    "mode": {
+      "regular": "연어런",
+      "bigRun": "빅 런"
+    },
+    "open": "{stage}에서 {mode} 진행 중!\n#연어런 #스플래툰3",
+    "openMystery": "{stage}에서 랜덤 무기가 지급되는 {mode} 진행 중!\n#연어런 #스플래툰3",
+    "openGrizzco": "{stage}에서 Mr. 베어표 랜덤 무기가 지급되는 {mode} 진행 중!\n#연어런 #스플래툰3",
+    "king": "거물연어: {king}",
+    "weapons": "지급 무기:",
+    "weapon": "– {weapon}",
+    "upcomingBigRun": "{stage}의 빅 런 일정이 추가되었습니다!\n#연어런 #스플래툰3",
+    "upcomingGrizzco": "{stage}의 Mr. 베어표 랜덤 무기 일정이 추가되었습니다!\n#연어런 #스플래툰3",
+    "upcomingMystery": "{stage}의 랜덤 무기 일정이 추가되었습니다!\n#연어런 #스플래툰3",
+    "starts": "{time} 뒤 시작합니다.\n지급 무기:",
+    "unknownStage": "미정"
+  },
+  "eggstra": {
+    "open": "{stage}에서 아르바이트 팀 콘테스트 개최 중!\n#연어런 #스플래툰3",
+    "upcoming": "{stage}의 아르바이트 팀 콘테스트 일정이 추가되었습니다!\n#연어런 #스플래툰3"
+  },
+  "time": {
+    "day": "{count}일",
+    "days": "{count}일",
+    "hour": "{count}시간",
+    "hours": "{count}시간",
+    "minute": "{count}분",
+    "minutes": "{count}분",
+    "second": "{count}초",
+    "seconds": "{count}초",
+    "period": "{start} ~ {end} (한국 시간)"
+  },
+  "festival": {
+    "global": "전 세계",
+    "globalResults": "전 세계",
+    "upcoming": "다음 페스티벌 투표가 시작되었습니다!\n{title}\n#페스티벌 #스플래툰3",
+    "upcoming:3d": "페스티벌 시작까지 3일!\n{title}\n#페스티벌 #스플래툰3",
+    "upcoming:1d": "페스티벌 시작까지 24시간!\n{title}\n#페스티벌 #스플래툰3",
+    "active": "페스티벌 개최 중!\n{title}\n#페스티벌 #스플래툰3",
+    "ended": "페스티벌이 종료되었습니다. 결과는 보통 종료 후 2시간 이내에 발표됩니다.\n#페스티벌 #스플래툰3",
+    "results": "페스티벌 결과 발표! {team} 팀 승리!\n#페스티벌 #스플래툰3",
+    "resultsWrapper": "{title} 페스티벌 결과"
+  },
+  "alt": {
+    "gear": {
+      "daily": "오늘의 픽업: {brand}.",
+      "regular": "판매 중인 기어. 첫 번째 기어를 크게 표시합니다.",
+      "item": "{name}: {price}원, {time} 남음.",
+      "ability": "기본 기어 파워: {power}.",
+      "brand": "브랜드: {brand}.",
+      "slots": "추가 기어 파워 슬롯: {count}개."
+    },
+    "shift": {
+      "stage": "{mode}: {stage}.",
+      "remaining": "{time} 남음.",
+      "opens": "{time} 뒤 시작.",
+      "eggstra": "아르바이트 팀 콘테스트",
+      "period": "{start} ~ {end} (한국 시간)"
+    },
+    "festival": {
+      "theme": "페스티벌: {title}",
+      "teams": "왼쪽부터 {teams}.",
+      "winner": "우승: {team}.",
+      "row": "{category}: {values}.",
+      "value": "{team} {percent}%",
+      "conchs": "소라고둥 획득률",
+      "votes": "득표율",
+      "open": "오픈",
+      "pro": "챌린지",
+      "tricolor": "트리컬러 어택"
+    },
+    "separator": ", "
+  }
+}

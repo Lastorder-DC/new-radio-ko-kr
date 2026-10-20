@@ -72,6 +72,7 @@ export default class MastodonClient extends Client
         sensitive: !!status.contentWrapper, // Without the sensitive property the image is still visible
         mediaIds,
         visibility: this._visibility,
+        language: status.locale?.split('-')[0],
       });
     } catch (error) {
       console.error(`[${this.name}] Failed to post ${generator.key}:`, error.message);

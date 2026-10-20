@@ -13,6 +13,8 @@ Many thanks to the following projects for making Nintendo Switch Online automate
 
 See [the Korean bot operation analysis](docs/bot-operation-ko.md) for architecture, nxapi version diagnostics, and deployment options.
 
+Social posts default to Korean (`SOCIAL_LOCALE=ko-KR`). Korean screenshots use Korean game names and Asia/Seoul time. Use `npm run social:preview -- ko-KR` to generate local previews without posting.
+
 ## Project Setup
 
 ```sh

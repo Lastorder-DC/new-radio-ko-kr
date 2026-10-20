@@ -70,5 +70,16 @@
     "not_available": "스케줄이 미정입니다",
     "now": "지금",
     "now_open": "개최 중!"
+  },
+  "screenshots": {
+    "headers": {
+      "schedules": "스테이지 스케줄",
+      "salmonrun": "연어런",
+      "challenges": "이벤트 매치",
+      "splatfest": "페스티벌",
+      "daily": "오늘의 픽업",
+      "gear": "오징어넷 기어"
+    },
+    "tricolor": "트리컬러 배틀"
   }
 }

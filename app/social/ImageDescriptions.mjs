@@ -59,7 +59,7 @@ export default class ImageDescriptions {
       stage: this.messages.game('stages', schedule.settings.coopStage),
     })];
 
-    if (this.messages.locale === 'ja-JP') {
+    if (['ja-JP', 'ko-KR'].includes(this.messages.locale)) {
       lines.push(this.text('shift.period', {
         start: this.messages.date(schedule.startTime),
         end: this.messages.date(schedule.endTime),
