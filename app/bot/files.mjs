@@ -24,7 +24,7 @@ export async function writeJson(file, value) {
 
 export function errorMessage(error) {
   let message = error?.message || String(error);
-  for (const secret of [process.env.MASTODON_ACCESS_TOKEN, process.env.BROWSERLESS_TOKEN]) {
+  for (const secret of [process.env.MASTODON_ACCESS_TOKEN, process.env.BROWSERLESS_TOKEN, process.env.BUFFER_API_KEY]) {
     if (secret) message = message.replaceAll(secret, '[redacted]');
   }
   return message.replace(/([?&]token=)[^&\s]+/gi, '$1[redacted]');

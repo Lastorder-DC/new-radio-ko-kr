@@ -21,7 +21,10 @@ export default class BufferApi {
     });
 
     if (!response.ok) {
-      throw new Error(`Buffer HTTP ${response.status}`);
+      const error = new Error(`Buffer HTTP ${response.status}`);
+      error.definitive = response.status >= 400 && response.status < 500 && response.status !== 408;
+      error.retryAfterMs = Number(response.headers.get('retry-after') || 0) * 1000;
+      throw error;
     }
 
     const result = await response.json();
@@ -56,7 +59,9 @@ export default class BufferApi {
     });
 
     if (data.createPost?.message) {
-      throw new Error(data.createPost.message);
+      const error = new Error(data.createPost.message);
+      error.definitive = true;
+      throw error;
     }
 
     const post = data.createPost?.post;
@@ -66,6 +71,37 @@ export default class BufferApi {
     }
 
     return post;
+  }
+
+  async getDeliveryChannel(id) {
+    const data = await this.request(`
+      query DeliveryChannel($input: ChannelInput!) {
+        channel(input: $input) { id name service externalLink organizationId isDisconnected isLocked isQueuePaused }
+      }
+    `, { input: { id } });
+    return data.channel;
+  }
+
+  async getPost(id) {
+    const data = await this.request(`
+      query DeliveryPost($input: PostInput!) {
+        post(input: $input) { ${postFields} }
+      }
+    `, { input: { id } });
+    return data.post;
+  }
+
+  async listPostPage(organizationId, channelId, after = null) {
+    const data = await this.request(`
+      query DeliveryPosts($input: PostsInput!, $after: String) {
+        posts(first: 100, after: $after, input: $input) {
+          edges { node { ${postFields} text assets { source } } }
+          pageInfo { hasNextPage endCursor }
+        }
+      }
+    `, { input: { organizationId, filter: { channelIds: [channelId] } }, after });
+    if (!Array.isArray(data.posts?.edges) || !data.posts.pageInfo) throw new Error('Invalid Buffer post list');
+    return data.posts;
   }
 
   async getChannel(id) {

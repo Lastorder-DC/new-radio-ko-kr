@@ -1,6 +1,6 @@
 # 공개 JSON 기반 자동 게시 봇
 
-이 실행 경로는 Nintendo/nxapi 수집, S3/R2 동기화, 다른 SNS 게시, 프로필 변경을 실행하지 않는다. 한국어 대전 스케줄·연어런·일반 기어 변경만 마스토돈에 게시한다. 기본 공개범위는 `unlisted`다.
+이 실행 경로는 Nintendo/nxapi 수집, S3/R2 동기화, 프로필 변경을 실행하지 않는다. 한국어 대전 스케줄·연어런·일반 기어 변경을 마스토돈에 게시하며, 설정하면 Buffer를 통해 X/Twitter에도 전송한다. 마스토돈 기본 공개범위는 `unlisted`다.
 
 ## 실행
 
@@ -90,3 +90,29 @@ healthcheck는 마지막 tick이 5분 이내에 완료됐는지 확인한다. AP
 ## 배포 검증 (2026-10-20)
 
 실제 Docker Compose에서 공개 JSON 수집과 세 종류의 한국어 미리보기를 확인한 뒤 운영 계정에 각 1건을 게시했다. 서버 응답과 본인 타임라인에서 세 게시 모두 `visibility=unlisted`, `language=ko`, 이미지 1개와 대체 텍스트를 확인했다. 컨테이너 재시작 후 세 항목 모두 `unchanged`로 처리됐고, 공개 JSON도 다시 다운로드하지 않았다.
+
+## Buffer 경유 X/Twitter 자동 게시
+
+Buffer personal API key에 `accountRead`, `postsRead`, `postsWrite` 권한을 부여한다. 다음 값을 `.env`에 넣고 서비스를 다시 생성한다.
+
+```dotenv
+BUFFER_API_KEY=<Buffer API key>
+BUFFER_TWITTER_CHANNEL_ID=<조회한 Twitter 채널 ID>
+```
+
+```sh
+docker compose -f compose.bot.yml exec -T bot npm run social:buffer:channels
+docker compose -f compose.bot.yml up -d --build bot
+```
+
+공개 JSON 봇은 마스토돈에 성공적으로 게시한 동일 이벤트의 본문·이미지·대체 텍스트를 재사용한다. Buffer가 이미지 URL을 인증 없이 가져올 수 있는지 먼저 확인한다. R2 자격 증명은 필요하지 않다. 마스토돈 게시와 원본 첨부 이미지를 Buffer 전송 완료 전에 삭제하지 않는다. 기존 `npm run social`의 BufferTwitterClient는 R2 업로드 방식을 그대로 사용하므로 공개 JSON 봇에는 `npm run bot` 경로를 사용한다.
+
+Buffer 채널은 연결·잠금·일시정지 상태를 검증하고 `shareNow`로 전송한다. 활성화 직후에는 현재 세 항목을 트위터에 한 번씩 게시한다. 마스토돈에는 기존 이력이 유지되므로 재게시하지 않는다. 마스토돈 공개범위는 `unlisted`를 유지하며, X 게시에는 마스토돈의 공개범위 옵션이 적용되지 않는다.
+
+전송 이력은 `storage/public-bot/buffer/<채널 ID 해시>/`에 별도로 저장한다. Buffer가 반환한 게시 ID와 `scheduled`/`sending`/`sent` 상태를 기록하고, 후속 tick에서 실제 상태와 X 게시 링크를 조회한다. `scheduled`는 Buffer가 요청을 수락한 상태이며 X 게시 완료는 `sent`와 링크로 확인한다. 한쪽 API 장애가 다른 쪽 이력을 초기화하지 않는다. 다만 X의 이미지·본문 공급원은 마스토돈이므로 같은 이벤트의 마스토돈 게시가 성공해야 X 전송을 진행한다.
+
+Buffer에는 문서화된 멱등성 키가 없으므로 생성 요청의 응답이 유실되면 채널·본문·원본 이미지 URL이 일치하는 Buffer 게시를 조회한다. 찾으면 기존 게시 ID를 복구하고, 찾지 못하면 `needs-review`로 보류한다. 불확실한 요청을 무조건 다시 보내 중복 게시하지 않는다. 이 경우 Buffer에서 실제 접수 여부를 확인한 후 해당 대기 상태를 복구해야 한다. 명확한 요청 거절은 대기 후 재시도하며, 이미 수락된 게시가 `error`/`draft` 상태가 되면 자동으로 새 게시를 만들지 않고 `delivery-error`로 알린다.
+
+Buffer의 상태는 `health.json`의 `buffer` 항목과 봇 로그에서 확인한다. 첫 연결 시 채널 ID 조회는 읽기 전용이며, 자동 게시 활성화 후의 생성 요청만 실제 X 전송을 수행한다.
+
+Buffer 연결 검증에서는 스케줄·연어런·기어 각 1건의 `sent` 상태와 X 게시 링크를 API로 확인했다. 서비스 재시작 후 Buffer와 마스토돈 모두 `unchanged`로 처리되어 추가 게시하지 않았다. 트위터용 별도 R2 설정이나 마스토돈 공개범위 변경은 하지 않았다.

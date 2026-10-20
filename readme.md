@@ -17,7 +17,7 @@ Social posts default to Korean (`SOCIAL_LOCALE=ko-KR`). Korean screenshots use K
 
 ## Automatic Mastodon bot
 
-See [the public JSON bot deployment guide](docs/public-bot-ko.md). `compose.bot.yml` builds this fork and posts Korean schedules, Salmon Run rotations, and gear changes with `unlisted` visibility.
+See [the public JSON bot deployment guide](docs/public-bot-ko.md). `compose.bot.yml` builds this fork and posts Korean schedules, Salmon Run rotations, and gear changes with `unlisted` visibility. Set `BUFFER_API_KEY` and `BUFFER_TWITTER_CHANNEL_ID` to also relay these posts to X/Twitter through Buffer, reusing the Mastodon media URLs.
 
 ## Project Setup
 
