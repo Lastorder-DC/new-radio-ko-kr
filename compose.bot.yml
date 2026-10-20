@@ -1,0 +1,49 @@
+name: new-radio
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: docker/bot.Dockerfile
+    image: new-radio-ko-kr-bot:local
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 5m
+    env_file: .env
+    environment:
+      TZ: Asia/Seoul
+      SCREENSHOT_PROVIDER: browserless
+      SCREENSHOT_HOST: bot
+      BROWSERLESS_ENDPOINT: ws://browserless:3000?token=${BROWSERLESS_TOKEN:?Set BROWSERLESS_TOKEN in .env}
+      MASTODON_VISIBILITY: ${MASTODON_VISIBILITY:-unlisted}
+    volumes:
+      - ./storage:/app/storage
+    depends_on:
+      browserless:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "app/bot/health.mjs"]
+      interval: 60s
+      timeout: 5s
+      start_period: 300s
+      retries: 3
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+  browserless:
+    image: ${BROWSERLESS_IMAGE:-ghcr.io/browserless/chromium:latest}
+    init: true
+    restart: unless-stopped
+    shm_size: 512mb
+    environment:
+      TOKEN: ${BROWSERLESS_TOKEN:?Set BROWSERLESS_TOKEN in .env}
+      CONCURRENT: "1"
+      QUEUED: "5"
+      TIMEOUT: "120000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/pressure?token='+process.env.TOKEN).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }

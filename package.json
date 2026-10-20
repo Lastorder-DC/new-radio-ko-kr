@@ -38,7 +38,11 @@
     "data:archive:verify:repair": "node app/index.mjs archiveVerify --repair",
     "sync": "node app/index.mjs sync",
     "sync:upload": "node app/index.mjs syncUpload",
-    "sync:download": "node app/index.mjs syncDownload"
+    "sync:download": "node app/index.mjs syncDownload",
+    "bot": "mkdir -p storage && flock -n storage/public-bot.lock node app/bot/index.mjs run",
+    "bot:once": "mkdir -p storage && flock -n storage/public-bot.lock node app/bot/index.mjs once",
+    "bot:preview": "mkdir -p storage && flock -n storage/public-bot.lock node app/bot/index.mjs preview",
+    "bot:fetch": "mkdir -p storage && flock -n storage/public-bot.lock node app/bot/index.mjs fetch"
   },
   "dependencies": {
     "@atproto/api": "^0.20.42",

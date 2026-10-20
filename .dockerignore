@@ -1,0 +1,14 @@
+.git
+.env
+.env.*
+node_modules
+dist
+dist.*
+storage
+temp
+.wrangler
+coverage
+*.log
+.agents
+.aws
+.codex

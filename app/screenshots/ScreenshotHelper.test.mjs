@@ -13,7 +13,8 @@ describe('ScreenshotHelper', () => {
     let page = {
       setViewport: vi.fn(),
       goto: vi.fn(),
-      waitForSelector: vi.fn(),
+      waitForFunction: vi.fn(),
+      evaluate: vi.fn(),
       screenshot: vi.fn().mockResolvedValue(png),
       close: vi.fn(),
     };
@@ -56,8 +57,8 @@ describe('ScreenshotHelper', () => {
       new URL('http://app:4321/screenshots/#schedules'),
       { waitUntil: 'load' },
     );
-    expect(page.waitForSelector).toHaveBeenCalledWith(
-      '[data-screenshot-ready="true"]',
+    expect(page.waitForFunction).toHaveBeenCalledWith(
+      expect.any(Function),
       { timeout: 30_000 },
     );
     expect(httpServer.close).toHaveBeenCalledOnce();

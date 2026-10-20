@@ -2,6 +2,8 @@
 
 확인 기준: 2026-10-20, upstream/main `07ba375`. 실제 Nintendo 계정 로그인 및 SNS 게시 검증은 수행하지 않았다.
 
+자동 게시 구현과 운영 명령은 [공개 JSON 봇 운영 가이드](public-bot-ko.md)를 참고한다.
+
 ## 결론
 
 일정과 연어런 로테이션 알림이 목적이라면 Splatoon3.ink의 공개 JSON을 캐시해서 기존 스케줄 store와 게시 생성기에 공급하는 구성이 가장 간단하다. nxapi와 Nintendo 계정이 필요 없다. 자체 수집이 필요하면 이 저장소의 Nintendo → nxapi → SplatNet3 파이프라인을 사용할 수 있으나, 베타 패키지 설치 외에 nxapi 인증 클라이언트 등록도 필요하다.

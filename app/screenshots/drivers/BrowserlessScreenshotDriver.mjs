@@ -1,6 +1,6 @@
 import { URL } from 'url';
 import puppeteer from 'puppeteer-core';
-import { screenshotReadySelector, screenshotReadyTimeout } from '../../../src/common/screenshot.mjs';
+import { screenshotReadyTimeout } from '../../../src/common/screenshot.mjs';
 import HttpServer from '../HttpServer.mjs';
 
 export default class BrowserlessScreenshotDriver
@@ -45,9 +45,12 @@ export default class BrowserlessScreenshotDriver
     await this._page.goto(url, {
       waitUntil: 'load',
     });
-    await this._page.waitForSelector(screenshotReadySelector, {
-      timeout: screenshotReadyTimeout,
-    });
+    await this._page.waitForFunction(() => {
+      const { screenshotReady, screenshotError } = document.documentElement.dataset;
+      return screenshotReady === 'true' || !!screenshotError;
+    }, { timeout: screenshotReadyTimeout });
+    const error = await this._page.evaluate(() => document.documentElement.dataset.screenshotError);
+    if (error) throw new Error(error);
 
     return await this._page.screenshot();
   }

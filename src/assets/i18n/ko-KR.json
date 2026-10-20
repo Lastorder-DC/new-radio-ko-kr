@@ -7,7 +7,8 @@
   "times": {
     "now": "오픈!",
     "next": "다음",
-    "future": "그다음"
+    "future": "그다음",
+    "checkback": "잠시 후 다시 확인해 주세요!"
   },
   "time": {
     "in": "{time} 뒤",
@@ -35,13 +36,15 @@
       "splatfest": "페스티벌 매치",
       "xmatch": "X 매치",
       "league": "리그 매치"
-    }
+    },
+    "all-upcoming": "이후 스테이지 전체 보기"
   },
   "salmonrun": {
     "title": "새먼 런",
     "weapons": "지급 무기",
     "bigrun": "빅 런",
-    "eggstrawork": "아르바이트 팀 콘테스트"
+    "eggstrawork": "아르바이트 팀 콘테스트",
+    "opens": "아르바이트 시작"
   },
   "festival": {
     "title": "페스티벌",

@@ -15,7 +15,7 @@ export default class MastodonClient extends Client
 
     this._url = process.env.MASTODON_URL;
     this._accessToken = process.env.MASTODON_ACCESS_TOKEN;
-    this._visibility = process.env.MASTODON_VISIBILITY || 'public';
+    this._visibility = process.env.MASTODON_VISIBILITY || 'unlisted';
   }
 
   async canSend() {

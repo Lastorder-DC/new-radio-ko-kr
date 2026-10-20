@@ -15,6 +15,10 @@ See [the Korean bot operation analysis](docs/bot-operation-ko.md) for architectu
 
 Social posts default to Korean (`SOCIAL_LOCALE=ko-KR`). Korean screenshots use Korean game names and Asia/Seoul time. Use `npm run social:preview -- ko-KR` to generate local previews without posting.
 
+## Automatic Mastodon bot
+
+See [the public JSON bot deployment guide](docs/public-bot-ko.md). `compose.bot.yml` builds this fork and posts Korean schedules, Salmon Run rotations, and gear changes with `unlisted` visibility.
+
 ## Project Setup
 
 ```sh
