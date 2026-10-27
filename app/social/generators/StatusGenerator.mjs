@@ -77,7 +77,8 @@ export default class StatusGenerator
     let currentTime = await this.getDataTime();
     let cachedTime = await this.lastPostCache(client).getData();
 
-    return currentTime && (!cachedTime || (currentTime > cachedTime));
+    return currentTime && (!cachedTime || (typeof currentTime === 'string' || typeof cachedTime === 'string'
+      ? currentTime !== cachedTime : currentTime > cachedTime));
   }
 
   async updatelastPostCache(client) {

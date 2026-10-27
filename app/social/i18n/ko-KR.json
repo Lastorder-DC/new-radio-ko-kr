@@ -69,7 +69,9 @@
     "active": "페스티벌 개최 중!\n{title}\n#페스티벌 #스플래툰3",
     "ended": "페스티벌이 종료되었습니다. 결과는 보통 종료 후 2시간 이내에 발표됩니다.\n#페스티벌 #스플래툰3",
     "results": "페스티벌 결과 발표! {team} 팀 승리!\n#페스티벌 #스플래툰3",
-    "resultsWrapper": "{title} 페스티벌 결과"
+    "resultsWrapper": "{title} 페스티벌 결과",
+    "announced": "페스티벌 예정!\n{title}\n#페스티벌 #스플래툰3",
+    "tricolor": "트리컬러 매치가 시작되었습니다!\n{title}\n#페스티벌 #스플래툰3"
   },
   "alt": {
     "gear": {

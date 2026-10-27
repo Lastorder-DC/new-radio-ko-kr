@@ -69,7 +69,9 @@
     "active": "フェス開催中！\n{title}\n#フェス情報 #スプラトゥーン3 #splatoon3",
     "ended": "フェスは終了しました！結果発表は通常、終了から2時間以内です。\n#フェス情報 #スプラトゥーン3 #splatoon3",
     "results": "フェスの結果発表！「{team}」チームの勝利！\n#フェス情報 #スプラトゥーン3 #splatoon3",
-    "resultsWrapper": "{title} フェスの結果"
+    "resultsWrapper": "{title} フェスの結果",
+    "announced": "次回のフェス：{title}\n#フェス情報 #スプラトゥーン3 #splatoon3",
+    "tricolor": "トリカラマッチ開催中！\n{title}\n#フェス情報 #スプラトゥーン3 #splatoon3"
   },
   "alt": {
     "gear": {

@@ -103,4 +103,15 @@ describe('durable Buffer relay', () => {
     expect(await readJson(statePath)).toEqual(before);
   });
 
+
+  it('accepts string festival keys without replaying an earlier accepted phase', async () => {
+    const { bot, api, relay, sourcePath } = await setup();
+    for (const dataTime of ['JUEA-108:active', 'JUEA-108:tricolor']) {
+      await writeJson(sourcePath, { lastPosted: { dataTime, id: 'mastodon-1' }, pending: null });
+      expect((await relay.process(bot, 'schedules', dataTime, { now: 1000 })).result).toBe('accepted');
+    }
+    expect((await relay.process(bot, 'schedules', 'JUEA-108:active', { now: 2000 })).result).toBe('unchanged');
+    expect(api.createPost).toHaveBeenCalledTimes(2);
+  });
+
 });

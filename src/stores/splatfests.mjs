@@ -2,6 +2,9 @@ import { acceptHMRUpdate, defineStore } from 'pinia';
 import { computed } from 'vue';
 import { useFestivalsDataStore, useSchedulesDataStore } from './data.mjs';
 import { useTimeStore } from './time.mjs';
+// Shared with the Node bot, where Vite aliases are unavailable.
+// eslint-disable-next-line @dword-design/import-alias/prefer-alias
+import { tricolorActive } from '../common/festival.mjs';
 
 export const STATUS_PAST = 'past';
 export const STATUS_ACTIVE = 'active';
@@ -40,7 +43,7 @@ function defineSplatfestRegionStore(region) {
       return {
         ...node,
         status: getStatus(node),
-        hasResults: node.teams.some(t => t.result),
+        hasResults: node.teams.every(t => t.result) && node.teams.some(t => t.result?.isWinner),
         regions: getRegions(node),
       };
     }) ?? []);
@@ -77,7 +80,7 @@ function defineSplatfestRegionStore(region) {
 
       return {
         ...fest,
-        isTricolorActive: time.isActive(fest.midtermTime, fest.endTime),
+        isTricolorActive: tricolorActive(fest, time.now),
         startTime: fest.midtermTime,
         endTime: fest.endTime,
       };

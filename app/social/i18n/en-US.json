@@ -69,7 +69,9 @@
     "active": "The {region} Splatfest is NOW OPEN! {title} #splatfest #splatoon3",
     "ended": "The {region} Splatfest is now closed. Results are usually posted within 2 hours! #splatfest #splatoon3",
     "results": "{region} Splatfest results: Team {team} wins! #splatfest #splatoon3",
-    "resultsWrapper": "{title} Splatfest Results"
+    "resultsWrapper": "{title} Splatfest Results",
+    "announced": "Upcoming Splatfest: {title} #splatfest #splatoon3",
+    "tricolor": "Tricolor Battle is now open! {title} #splatfest #splatoon3"
   },
   "alt": {
     "gear": {

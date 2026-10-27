@@ -6,6 +6,8 @@ import SalmonRunStatus from '../social/generators/SalmonRunStatus.mjs';
 import RegularGearStatus from '../social/generators/RegularGearStatus.mjs';
 import ScreenshotHelper from '../screenshots/ScreenshotHelper.mjs';
 import { readJson, writeJson, errorMessage } from './files.mjs';
+import { validEventKey, eventWasPosted, rememberEvent } from './events.mjs';
+import { FestivalStatus, FestivalResultsStatus } from './FestivalStatus.mjs';
 
 export const digest = value => createHash('sha256').update(value).digest('hex');
 
@@ -13,7 +15,8 @@ export default class PublicBot {
   constructor({ cache, publisher, root = 'storage/public-bot', visibility = 'unlisted',
     screenshots = () => new ScreenshotHelper,
     generators = now => [new SchedulesStatus({ locale: 'ko-KR', now }),
-      new SalmonRunStatus({ locale: 'ko-KR', now }), new RegularGearStatus({ locale: 'ko-KR', now })],
+      new SalmonRunStatus({ locale: 'ko-KR', now }), new RegularGearStatus({ locale: 'ko-KR', now }),
+      new FestivalStatus({ now }), new FestivalResultsStatus({ now })],
   } = {}) {
     if (!['unlisted', 'public', 'private'].includes(visibility)) throw new Error('Invalid MASTODON_VISIBILITY');
     Object.assign(this, { cache, publisher, root, visibility, screenshots, generators });
@@ -66,12 +69,12 @@ export default class PublicBot {
   async process(generator, { dryRun, now }) {
     // These generators select only an active rotation or unexpired gear at the supplied time.
     const dataTime = await generator.getDataTime();
-    if (!Number.isFinite(dataTime)) return { result: 'no-current-data' };
+    if (!validEventKey(dataTime)) return { result: 'no-current-data' };
     const statePath = path.join(this.accountRoot, `${generator.key}.json`);
     const state = await readJson(statePath, { lastPosted: null, pending: null });
     if (!state || !Object.hasOwn(state, 'lastPosted') || !Object.hasOwn(state, 'pending') ||
-        (state.lastPosted && !Number.isFinite(state.lastPosted.dataTime)) ||
-        (state.pending && (!Number.isFinite(state.pending.dataTime) || !state.pending.idempotencyKey ||
+        (state.lastPosted && !validEventKey(state.lastPosted.dataTime)) ||
+        (state.pending && (!validEventKey(state.pending.dataTime) || !state.pending.idempotencyKey ||
           !Array.isArray(state.pending.mediaIds) || !state.pending.images?.length || !state.pending.payload))) {
       throw new Error('Invalid delivery state; refusing to reset posting history');
     }
@@ -97,7 +100,7 @@ export default class PublicBot {
         await writeJson(statePath, state);
       }
     }
-    if (state.lastPosted && dataTime <= state.lastPosted.dataTime) return { result: 'unchanged' };
+    if (state.lastPosted && eventWasPosted(dataTime, state.lastPosted.dataTime, state.postedKeys)) return { result: 'unchanged' };
     if (dryRun) {
       const helper = this.screenshots();
       try {
@@ -174,6 +177,7 @@ export default class PublicBot {
     const updated = {
       lastPosted: { dataTime: state.pending.dataTime, ...result, confirmedAt: Date.now() },
       pending: null,
+      postedKeys: rememberEvent(state.pending.dataTime, state.postedKeys),
     };
     const images = state.pending.images;
     await writeJson(statePath, updated);

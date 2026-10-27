@@ -1,0 +1,15 @@
+.git
+.env
+.env.*
+node_modules
+storage
+temp
+dist/data
+dist/data.*
+dist/status-screenshots
+.wrangler
+coverage
+*.log
+.agents
+.aws
+.codex

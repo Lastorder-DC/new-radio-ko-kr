@@ -2,6 +2,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import BufferApi from '../social/buffer/BufferApi.mjs';
 import { readJson, writeJson, errorMessage } from './files.mjs';
+import { validEventKey, eventWasPosted, rememberEvent } from './events.mjs';
 
 export default class BufferRelay {
   constructor({ channelId, api = new BufferApi, fetchImpl = fetch } = {}) {
@@ -55,12 +56,12 @@ export default class BufferRelay {
   }
 
   async process(bot, key, dataTime, { now, dryRun }) {
-    if (!Number.isFinite(dataTime)) return { result: 'no-current-data' };
+    if (!validEventKey(dataTime)) return { result: 'no-current-data' };
     const file = path.join(this.root, `${key}.json`);
     const state = await readJson(file, { lastAccepted: null, pending: null });
     if (!state || !Object.hasOwn(state, 'lastAccepted') || !Object.hasOwn(state, 'pending') ||
-        (state.lastAccepted && (!Number.isFinite(state.lastAccepted.dataTime) || !state.lastAccepted.id)) ||
-        (state.pending && (!Number.isFinite(state.pending.dataTime) || !state.pending.text || !state.pending.assets?.length))) {
+        (state.lastAccepted && (!validEventKey(state.lastAccepted.dataTime) || !state.lastAccepted.id)) ||
+        (state.pending && (!validEventKey(state.pending.dataTime) || !state.pending.text || !state.pending.assets?.length))) {
       throw new Error('Invalid Buffer delivery state; refusing to reset history');
     }
     if (state.lastAccepted?.status !== 'sent' && state.lastAccepted?.id && !dryRun) {
@@ -80,7 +81,7 @@ export default class BufferRelay {
         return { result: 'needs-review', message: 'Submission response was lost; inspect Buffer before resubmitting' };
       }
     }
-    if (state.lastAccepted && dataTime <= state.lastAccepted.dataTime) {
+    if (state.lastAccepted && eventWasPosted(dataTime, state.lastAccepted.dataTime, state.postedKeys)) {
       return { result: ['sent', 'scheduled', 'sending'].includes(state.lastAccepted.status) ? 'unchanged' : 'delivery-error',
         status: state.lastAccepted.status, id: state.lastAccepted.id, url: state.lastAccepted.url };
     }
@@ -140,6 +141,7 @@ export default class BufferRelay {
       lastAccepted: { dataTime: state.pending.dataTime, id: post.id, status: post.status,
         url: post.externalLink, sourcePostId: state.pending.sourcePostId, acceptedAt: Date.now() },
       pending: null,
+      postedKeys: rememberEvent(state.pending.dataTime, state.postedKeys),
     };
     await writeJson(file, updated);
     Object.assign(state, updated);

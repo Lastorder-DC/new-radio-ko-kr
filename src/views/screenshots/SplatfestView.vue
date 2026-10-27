@@ -19,6 +19,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import ScreenshotLayout from '@/layouts/ScreenshotLayout.vue';
 
 import { useUSSplatfestsStore, useEUSplatfestsStore, useJPSplatfestsStore, useAPSplatfestsStore } from '@/stores/splatfests';
@@ -35,6 +36,7 @@ const props = defineProps({
 });
 
 
+const route = useRoute();
 const festival = computed(() => {
   let store;
   switch(props.region) {
@@ -44,6 +46,7 @@ const festival = computed(() => {
     case 'AP': store = apSplatfests; break;
     default: return null;
   }
-  return store.upcomingFestival ?? store.activeFestival ?? store.recentFestival;
+  if (route.query.festivalId) return store.festivals.find(festival => festival.__splatoon3ink_id === route.query.festivalId);
+  return store.activeFestival ?? store.upcomingFestival ?? store.recentFestival;
 });
 </script>

@@ -105,4 +105,18 @@ describe('durable bot delivery', () => {
     await expect(bot.process(generator, { now: 1000 })).rejects.toThrow('Cannot read bot state');
     expect(publisher.publish).not.toHaveBeenCalled();
   });
+
+  it('deduplicates festival string keys across phase changes, restarts and repeated source data', async () => {
+    const { bot, generator, publisher, options } = await setup();
+    for (const key of ['JUEA-108:upcoming', 'JUEA-108:upcoming:3d', 'JUEA-108:active', 'JUEA-108:tricolor']) {
+      generator.getDataTime.mockResolvedValue(key);
+      expect((await bot.process(generator, { now: 1000 })).result).toBe('posted');
+    }
+    const restarted = new PublicBot(options);
+    await restarted.initialize();
+    generator.getDataTime.mockResolvedValue('JUEA-108:active');
+    expect((await restarted.process(generator, { now: 2000 })).result).toBe('unchanged');
+    expect(publisher.publish).toHaveBeenCalledTimes(4);
+  });
+
 });
