@@ -19,10 +19,10 @@ export default class DailyDropGearStatus extends StatusGenerator
   }
 
   async getDataTime() {
-    let { brand } = await this.getData();
+    let { brand, gears } = await this.getData();
 
     // We only have end times for gear, so use that to track the status time
-    return Date.parse(brand.saleEndTime);
+    return brand && gears?.length ? Date.parse(brand.saleEndTime) : null;
   }
 
   async _getStatus() {

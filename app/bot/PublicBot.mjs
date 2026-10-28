@@ -4,6 +4,11 @@ import { createHash } from 'node:crypto';
 import SchedulesStatus from '../social/generators/SchedulesStatus.mjs';
 import SalmonRunStatus from '../social/generators/SalmonRunStatus.mjs';
 import RegularGearStatus from '../social/generators/RegularGearStatus.mjs';
+import DailyDropGearStatus from '../social/generators/DailyDropGearStatus.mjs';
+import ChallengeStatus from '../social/generators/ChallengeStatus.mjs';
+import SalmonRunUpcomingStatus from '../social/generators/SalmonRunUpcomingStatus.mjs';
+import EggstraWorkUpcomingStatus from '../social/generators/EggstraWorkUpcomingStatus.mjs';
+import EggstraWorkStatus from '../social/generators/EggstraWorkStatus.mjs';
 import ScreenshotHelper from '../screenshots/ScreenshotHelper.mjs';
 import { readJson, writeJson, errorMessage } from './files.mjs';
 import { validEventKey, eventWasPosted, rememberEvent } from './events.mjs';
@@ -16,7 +21,12 @@ export default class PublicBot {
     screenshots = () => new ScreenshotHelper,
     generators = now => [new SchedulesStatus({ locale: 'ko-KR', now }),
       new SalmonRunStatus({ locale: 'ko-KR', now }), new RegularGearStatus({ locale: 'ko-KR', now }),
-      new FestivalStatus({ now }), new FestivalResultsStatus({ now })],
+      new FestivalStatus({ now }), new FestivalResultsStatus({ now }),
+      new DailyDropGearStatus({ locale: 'ko-KR', now }),
+      new ChallengeStatus({ locale: 'ko-KR', now }),
+      new SalmonRunUpcomingStatus({ locale: 'ko-KR', now }),
+      new EggstraWorkUpcomingStatus({ locale: 'ko-KR', now }),
+      new EggstraWorkStatus({ locale: 'ko-KR', now })],
   } = {}) {
     if (!['unlisted', 'public', 'private'].includes(visibility)) throw new Error('Invalid MASTODON_VISIBILITY');
     Object.assign(this, { cache, publisher, root, visibility, screenshots, generators });
@@ -48,7 +58,7 @@ export default class PublicBot {
       for (const generator of this.generators(now)) {
         try {
           // Expired source data must never cause outdated gear announcements.
-          const maximumAge = generator.key === 'gear.regular' ? 90 * 60_000 : 6 * 60 * 60_000;
+          const maximumAge = generator.key.startsWith('gear.') ? 90 * 60_000 : 6 * 60 * 60_000;
           if (now - source.fetchedAt > maximumAge) {
             report.results.push({ key: generator.key, result: 'source-too-old' });
             continue;

@@ -328,7 +328,7 @@ Opens in 1 hour.",
   ],
   "captures": [
     [
-      "salmonRun",
+      "salmonrun",
       {
         "params": {
           "eggstra": "true",
@@ -356,7 +356,7 @@ Opens in 5 hours.",
   ],
   "captures": [
     [
-      "salmonRun",
+      "salmonrun",
       {
         "params": {
           "eggstra": "true",
@@ -384,7 +384,7 @@ Opens in 1 day.",
   ],
   "captures": [
     [
-      "salmonRun",
+      "salmonrun",
       {
         "params": {
           "eggstra": "true",
@@ -412,7 +412,7 @@ Opens in 2 days.",
   ],
   "captures": [
     [
-      "salmonRun",
+      "salmonrun",
       {
         "params": {
           "eggstra": "true",

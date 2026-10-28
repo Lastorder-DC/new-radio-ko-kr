@@ -57,7 +57,7 @@ export default class EggstraWorkUpcomingStatus extends StatusGenerator
     let schedule = await this.getActiveSchedule();
 
     let media = new Media;
-    media.file = await screenshotHelper.capture('salmonRun', {
+    media.file = await screenshotHelper.capture('salmonrun', {
       params: { startTime: schedule?.startTime, eggstra: 'true' },
     });
 

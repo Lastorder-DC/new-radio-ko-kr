@@ -1,6 +1,6 @@
 # 공개 JSON 기반 자동 게시 봇
 
-이 실행 경로는 Nintendo/nxapi 수집, S3/R2 동기화, 프로필 변경을 실행하지 않는다. 한국어 대전 스케줄·연어런·일반 기어 변경과 페스티벌 알림을 마스토돈에 게시하며, 설정하면 Buffer를 통해 X/Twitter에도 전송한다. 마스토돈 기본 공개범위는 `unlisted`다.
+이 실행 경로는 Nintendo/nxapi 수집, S3/R2 동기화, 프로필 변경을 실행하지 않는다. 한국어 대전 스케줄·연어런·일반 기어 변경과 페스티벌 알림, 특별 연어런 예고, 팀 콘테스트 예고·시작, 이벤트 매치 시작, 오늘의 픽업을 마스토돈에 게시하며, 설정하면 Buffer를 통해 X/Twitter에도 전송한다. 마스토돈 기본 공개범위는 `unlisted`다.
 
 ## 실행
 
@@ -21,7 +21,7 @@ docker compose -f compose.bot.yml build bot
 docker compose -f compose.bot.yml up -d browserless
 # 첫 운영 시작 전, 공개 JSON과 이미지를 검증하되 게시하지 않는다.
 docker compose -f compose.bot.yml run --rm --use-aliases bot npm run bot:preview
-# 실제 자동 게시 시작. 첫 실행은 현재 항목 세 건을 게시한다.
+# 실제 자동 게시 시작. 첫 실행은 현재 유효한 항목을 각각 한 번 게시한다.
 docker compose -f compose.bot.yml up -d
 ```
 
@@ -157,3 +157,7 @@ docker compose -f compose.bot.yml up -d bot
 업데이트용 컨텍스트에서도 `.env`, `storage`, `temp`와 수집 JSON은 제외된다. 전체 의존성을 다시 설치할 공간이 있는 환경이나 의존성 변경이 있는 경우에는 기존 `compose.bot.yml`의 전체 빌드를 사용한다.
 
 페스티벌 운영 반영 검증에서는 실제 예정 행사의 예고를 마스토돈(`unlisted`, 한국어, 이미지·대체 텍스트)과 X(`sent`)에 각각 한 번 게시했다. 재시작 후 예고 및 기존 세 항목이 모두 `unchanged`로 처리됐다. 가상 중간 발표·결과 데이터는 미리보기에서만 사용했고 운영 게시에는 사용하지 않았다.
+
+## 추가 알림
+
+특별 연어런(빅 런·랜덤 무기·쿠마씨 무기)과 팀 콘테스트는 공개 일정에서 발견하면 예고를 한 번 게시한다. 팀 콘테스트 시작과 이벤트 매치의 각 개최 시간대 시작도 게시한다. 오늘의 픽업은 판매 종료 시각이 바뀔 때 게시한다. 모든 항목은 한국어 이미지·ALT, Mastodon unlisted와 Buffer X 전송 및 기존 중복 방지를 적용한다. 공개 JSON 수집은 최소 1시간 간격이므로 예고는 다음 수집 시점에 감지한다. 월간 연어런 보상 기어 알림은 활성화하지 않는다.

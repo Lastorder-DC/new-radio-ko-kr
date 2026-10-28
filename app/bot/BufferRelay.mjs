@@ -32,7 +32,7 @@ export default class BufferRelay {
       if (!source.current || !source.fetchedAt) throw new Error('Waiting for public JSON snapshot');
       for (const generator of bot.generators(now)) {
         try {
-          const maximumAge = generator.key === 'gear.regular' ? 90 * 60_000 : 6 * 60 * 60_000;
+          const maximumAge = generator.key.startsWith('gear.') ? 90 * 60_000 : 6 * 60 * 60_000;
           if (now - source.fetchedAt > maximumAge) {
             report.results.push({ key: generator.key, result: 'source-too-old' });
             continue;
